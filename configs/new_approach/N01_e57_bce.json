@@ -1,0 +1,17 @@
+{
+  "schema": "new_approach_n01_v1",
+  "seed": 42,
+  "inner_fraction": 0.2,
+  "folds": [0, 1, 2, 3, 4],
+  "losses": ["normal", "weighted"],
+  "epochs": 50,
+  "patience": 10,
+  "learning_rate": 0.001,
+  "weight_decay": 0.001,
+  "patients_per_batch": 2,
+  "eval_batch_size": 16,
+  "num_workers": 0,
+  "scheduler_factor": 0.5,
+  "scheduler_patience": 3,
+  "reference": "configs/patient_features/E57_patient_feature_mean_mac.json"
+}

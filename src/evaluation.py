@@ -231,6 +231,8 @@ def save_evaluation_figure(
     summary: dict[str, Any],
     config: EvaluationConfig,
     path: Path,
+    *,
+    title: str = "Evaluacion interna - unidad estadistica: paciente",
 ) -> None:
     os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib-caso-cancer")
     import matplotlib
@@ -291,11 +293,11 @@ def save_evaluation_figure(
             )
     axes[1, 1].set_xticks([0, 1], labels=["Predice 0", "Predice 1"])
     axes[1, 1].set_yticks([0, 1], labels=["Real 0", "Real 1"])
-    axes[1, 1].set_title(f"Matriz de confusion (umbral={config.threshold:.2f})")
+    axes[1, 1].set_title(f"Matriz de confusion (umbral={config.threshold:g})")
 
     for axis in axes.flat:
         axis.grid(alpha=0.15)
-    figure.suptitle("Evaluacion interna - unidad estadistica: paciente", fontsize=14)
+    figure.suptitle(title, fontsize=14)
     figure.tight_layout()
     path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(path, dpi=160, bbox_inches="tight", facecolor="white")
