@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172734">
+  <meta name="description" content="Demostración educativa de la CNN BreastDCEDL con tres fases DCE-MRI: PRE, EARLY y LATE.">
+  <title>Probar la CNN | BreastDCEDL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tailwind.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body class="demo-page">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <div class="site-header__inner mx-auto flex max-w-[1920px] items-center justify-between gap-5 px-6 lg:px-10">
+      <a class="brand" href="/" aria-label="BreastDCEDL, inicio"><span class="brand__mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Breast<span class="brand__accent">DCE</span>DL</span></a>
+      <nav class="desktop-nav" aria-label="Navegación principal"><a href="/#proyecto">Proyecto</a><a href="/#datos">Datos</a><a href="/#arquitectura">Arquitectura</a><a href="/#evaluacion">Evaluación</a></nav>
+      <a class="nav-demo nav-demo--active" href="/demo" aria-current="page">Probar la CNN <span aria-hidden="true">↗</span></a>
+      <details class="mobile-nav"><summary>Menú <span aria-hidden="true">☰</span></summary><nav aria-label="Navegación móvil"><a href="/">Portada</a><a href="/#datos">Datos</a><a href="/#arquitectura">Arquitectura</a><a href="/#evaluacion">Evaluación</a><a href="/demo" aria-current="page">Probar la CNN</a></nav></details>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <div class="demo-heading mx-auto grid max-w-[1920px] gap-10 px-6 pb-12 pt-16 lg:grid-cols-[1fr_.7fr] lg:px-10 lg:pt-24"><div><p class="demo-heading__label">Demostración interactiva</p><h1>Una muestra.<br>Tres fases.<br><span>Una estimación.</span></h1></div><div class="demo-heading__aside"><p>Carga PRE, EARLY y LATE del mismo corte. El modelo procesa las tres fases en el orden usado durante el entrenamiento y estima pCR futura para <strong>ese corte</strong>.</p><a href="/#arquitectura" class="text-link">Ver cómo está construida la CNN <span aria-hidden="true">↗</span></a></div></div>
+
+    <div class="demo-shell mx-auto max-w-[1920px] px-6 lg:px-10">
+      <aside class="notice" role="note"><span class="notice__mark" aria-hidden="true">!</span><p>Uso exclusivamente educativo y de investigación. El resultado <strong>no tiene validez clínica</strong> y no debe usarse para diagnóstico ni decisiones terapéuticas.</p></aside>
+
+      <section class="upload-section" aria-labelledby="upload-title">
+        <div class="upload-section__heading"><div><p class="section-label"><span>01</span><span>Entrada</span></p><h2 id="upload-title">Carga las tres imágenes</h2><p>PNG en escala de grises de 256 × 256 píxeles. Máximo 5 MB por fase.</p></div><span class="upload-section__sequence">PRE → EARLY → LATE</span></div>
+
+        <form id="prediction-form" novalidate>
+          <div class="upload-grid grid gap-4 md:grid-cols-3">
+            <div class="upload-card"><div class="upload-card__title"><span>01</span><div><h3>PRE</h3><p>Antes del contraste</p></div></div><div class="image-well"><img id="preview-PRE" alt="Vista previa de la fase PRE" hidden><span id="empty-PRE">La fase PRE aparecerá aquí</span></div><label for="PRE">Seleccionar imagen PRE</label><input id="PRE" name="PRE" type="file" accept="image/png,.png" required aria-describedby="PRE-help"><p id="PRE-help" class="file-help">Archivo del mismo corte que EARLY y LATE.</p></div>
+            <div class="upload-card"><div class="upload-card__title"><span>02</span><div><h3>EARLY</h3><p>Postcontraste temprano</p></div></div><div class="image-well"><img id="preview-EARLY" alt="Vista previa de la fase EARLY" hidden><span id="empty-EARLY">La fase EARLY aparecerá aquí</span></div><label for="EARLY">Seleccionar imagen EARLY</label><input id="EARLY" name="EARLY" type="file" accept="image/png,.png" required aria-describedby="EARLY-help"><p id="EARLY-help" class="file-help">Archivo de la fase temprana.</p></div>
+            <div class="upload-card"><div class="upload-card__title"><span>03</span><div><h3>LATE</h3><p>Postcontraste tardío</p></div></div><div class="image-well"><img id="preview-LATE" alt="Vista previa de la fase LATE" hidden><span id="empty-LATE">La fase LATE aparecerá aquí</span></div><label for="LATE">Seleccionar imagen LATE</label><input id="LATE" name="LATE" type="file" accept="image/png,.png" required aria-describedby="LATE-help"><p id="LATE-help" class="file-help">Archivo de la fase tardía.</p></div>
+          </div>
+          <div class="upload-actions"><button class="button button--dark" id="predict-button" type="submit">Validar y estimar <span aria-hidden="true">↗</span></button><p id="status-message" role="status" aria-live="polite">Selecciona las tres fases para continuar.</p></div>
+          <p id="error-message" class="error-message" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section id="result-section" class="result-section" aria-labelledby="result-title" hidden><div class="result-section__heading"><p class="section-label"><span>02</span><span>Resultado</span></p><h2 id="result-title">Estimación para este corte</h2></div><div class="result-grid grid gap-4 lg:grid-cols-[1fr_300px]"><div class="result-primary"><p>Probabilidad estimada de pCR=1</p><output id="probability">—</output><p id="classification"></p><span>Esta probabilidad no expresa supervivencia, curación ni una recomendación clínica.</span></div><div class="enhancement"><h3>Realce EARLY − PRE</h3><canvas id="enhancement-map" width="256" height="256" role="img" aria-label="Mapa conceptual del realce entre EARLY y PRE"></canvas><p>La visualización no cambia el tensor que recibe el modelo.</p></div></div><details class="trace"><summary>Versión del modelo y trazabilidad</summary><dl><div><dt>Umbral</dt><dd id="threshold">—</dd></div><div><dt>Modelo</dt><dd id="model-version">—</dd></div><div><dt>SHA-256</dt><dd id="model-checksum">—</dd></div><div><dt>Dispositivo</dt><dd id="device">—</dd></div><div><dt>Latencia</dt><dd id="latency">—</dd></div></dl></details></section>
+
+      <div class="demo-context"><h2>Qué significa este resultado</h2><p>La CNN devuelve un logit por corte; la sigmoide lo convierte en una probabilidad estimada de pCR. La evaluación científica principal agrega los cortes de una misma paciente y calcula las métricas a nivel de paciente.</p><a class="text-link" href="/#evaluacion">Entender la evaluación <span aria-hidden="true">↗</span></a></div>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="mx-auto flex max-w-[1920px] flex-wrap justify-between gap-5 px-6 py-7 lg:px-10"><span>BreastDCEDL · Proyecto académico individual</span><span>Uso educativo y de investigación · Sin validez clínica</span></div></footer>
+</body>
+</html>

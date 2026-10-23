@@ -1,0 +1,8 @@
+@import "tailwindcss" source("./");
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #172734;
+  --color-rose: #93475f;
+  --color-paper: #e5ecef;
+}

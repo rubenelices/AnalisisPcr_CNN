@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172734">
+  <meta name="description" content="Proyecto educativo BreastDCEDL: una CNN creada desde cero para estimar respuesta patológica completa a partir de tres fases DCE-MRI.">
+  <title>BreastDCEDL | Tres fases, una pregunta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tailwind.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <div class="site-header__inner mx-auto flex max-w-[1920px] items-center justify-between gap-5 px-6 lg:px-10">
+      <a class="brand" href="/" aria-label="BreastDCEDL, inicio"><span class="brand__mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Breast<span class="brand__accent">DCE</span>DL</span></a>
+      <nav class="desktop-nav" aria-label="Navegación principal">
+        <a href="#proyecto">Proyecto</a><a href="#datos">Datos</a><a href="#arquitectura">Arquitectura</a><a href="#evaluacion">Evaluación</a>
+      </nav>
+      <a class="nav-demo" href="/demo">Probar la CNN <span aria-hidden="true">↗</span></a>
+      <details class="mobile-nav"><summary>Menú <span aria-hidden="true">☰</span></summary><nav aria-label="Navegación móvil"><a href="#proyecto">Proyecto</a><a href="#datos">Datos</a><a href="#arquitectura">Arquitectura</a><a href="#evaluacion">Evaluación</a><a href="/demo">Probar la CNN</a></nav></details>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__inner mx-auto grid max-w-[1920px] items-center gap-12 px-6 py-16 lg:grid-cols-[.9fr_1.1fr] lg:gap-16 lg:px-10 lg:py-24">
+        <div class="hero__copy">
+          <div class="hero__kicker"><span class="kicker-line" aria-hidden="true"></span> Un proyecto de aprendizaje automático</div>
+          <h1 id="hero-title">Tres fases.<br>Una pregunta<br><span>sobre el futuro.</span></h1>
+          <p class="hero__lead">¿Puede una resonancia tomada antes del tratamiento ayudar a estimar si una paciente alcanzará respuesta patológica completa?</p>
+          <p class="hero__support">Exploramos esa pregunta con una CNN 2D diseñada desde cero. Esta es la historia de sus datos, sus decisiones y sus límites.</p>
+          <div class="hero__actions flex flex-wrap gap-3"><a class="button button--rose" href="#proyecto">Explorar el proyecto <span aria-hidden="true">↓</span></a><a class="button button--outline-light" href="/demo">Probar la CNN <span aria-hidden="true">↗</span></a></div>
+          <p class="hero__footnote">Investigación docente · Uso no clínico</p>
+        </div>
+        <div class="hero__visual" role="img" aria-label="Ilustración conceptual de las fases PRE, EARLY y LATE de una adquisición DCE-MRI; no representa una imagen clínica real.">
+          <div class="visual__top"><span>Secuencia DCE-MRI</span><span>01 / 03</span></div>
+          <div class="visual__film">
+            <div class="film-frame film-frame--pre"><div class="film-frame__top"><span>PRE</span><span>Antes</span></div><div class="scan scan--pre"><div class="scan__tissue"></div><div class="scan__inner"></div><div class="scan__signal"></div></div><div class="film-frame__bottom">Sin contraste</div></div>
+            <div class="film-frame film-frame--early"><div class="film-frame__top"><span>EARLY</span><span>Después · temprano</span></div><div class="scan scan--early"><div class="scan__tissue"></div><div class="scan__inner"></div><div class="scan__signal"></div></div><div class="film-frame__bottom">Entrada del contraste</div></div>
+            <div class="film-frame film-frame--late"><div class="film-frame__top"><span>LATE</span><span>Después · tardío</span></div><div class="scan scan--late"><div class="scan__tissue"></div><div class="scan__inner"></div><div class="scan__signal"></div></div><div class="film-frame__bottom">Evolución temporal</div></div>
+          </div>
+          <div class="visual__footer"><span class="visual__rule" aria-hidden="true"><i></i><i></i><i></i></span><span>Un mismo corte · tres momentos</span></div>
+          <div class="visual__caption">Ilustración conceptual; no contiene imágenes de pacientes.</div>
+        </div>
+      </div>
+      <div class="hero__bottom mx-auto flex max-w-[1920px] flex-wrap gap-4 px-6 pb-8 lg:px-10"><span>CNN propia desde cero</span><span aria-hidden="true">/</span><span>PRE · EARLY · LATE</span><span aria-hidden="true">/</span><span>Evaluación por paciente</span></div>
+    </section>
+
+    <section class="intro-section section" id="proyecto" aria-labelledby="project-title">
+      <div class="section-shell mx-auto max-w-[1920px] px-6 lg:px-10">
+        <div class="section-label"><span>01</span><span>La pregunta</span></div>
+        <div class="intro-grid grid gap-12 lg:grid-cols-[.86fr_1.14fr] lg:gap-24">
+          <div><h2 id="project-title" class="section-title">La imagen se obtiene antes. La respuesta se conoce después.</h2><p class="section-lead">La pCR es una respuesta patológica completa observada tras el tratamiento. En este proyecto, <strong>pCR=1</strong> significa que se alcanzó esa respuesta; <strong>pCR=0</strong>, que quedó enfermedad invasiva residual según la definición del estudio.</p></div>
+          <div class="timeline" aria-label="Secuencia temporal del problema">
+            <div class="timeline__item"><span class="timeline__index">1</span><div><h3>DCE-MRI previa</h3><p>Se adquieren tres fases del mismo tejido antes de iniciar el tratamiento.</p></div></div>
+            <div class="timeline__item"><span class="timeline__index">2</span><div><h3>Tratamiento neoadyuvante</h3><p>La CNN no observa este proceso; aprende relaciones a partir de casos anteriores.</p></div></div>
+            <div class="timeline__item"><span class="timeline__index">3</span><div><h3>Resultado patológico</h3><p>La etiqueta real se conoce después, al estudiar el tejido. Una predicción no la sustituye.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="data-section section" id="datos" aria-labelledby="data-title">
+      <div class="section-shell mx-auto max-w-[1920px] px-6 lg:px-10">
+        <div class="section-label"><span>02</span><span>Los datos</span></div>
+        <div class="section-heading grid gap-8 lg:grid-cols-[1fr_.75fr]"><h2 id="data-title" class="section-title">Una paciente aporta varios cortes. La paciente es la unidad de evaluación.</h2><p class="section-lead">Cada corte reúne tres PNG de 256 × 256 píxeles, siempre en orden PRE, EARLY y LATE. Son fases temporales, no canales de color.</p></div>
+        <div class="data-stats grid gap-6 sm:grid-cols-3"><div><strong>1.273</strong><span>pacientes públicas</span></div><div><strong>12.703</strong><span>cortes</span></div><div><strong>38.109</strong><span>imágenes PNG</span></div></div>
+        <div class="data-detail grid gap-6 lg:grid-cols-2">
+          <article class="data-detail__panel"><span class="panel-overline">Preparación</span><h3>Tres momentos, un tensor</h3><p>Las intensidades de las tres fases comparten una ventana. Se convierten a un tensor <code>[3, 256, 256]</code> de tipo <code>float32</code> en <code>[0, 1]</code>; esa misma función se reutiliza en la demo.</p><div class="phase-key"><span>PRE</span><span>EARLY</span><span>LATE</span><span aria-hidden="true">→</span><span>3 × 256 × 256</span></div></article>
+          <article class="data-detail__panel"><span class="panel-overline">Separación</span><h3>Sin mezclar pacientes</h3><p>El conjunto público tiene 1.097 pacientes de train y 176 de test. Dentro de train se usan folds agrupados por paciente para tomar decisiones. El test público ya se evaluó una vez con el checkpoint E57 original; no se utiliza para elegir nuevas variantes.</p><div class="split-track" role="img" aria-label="Train público: 1.097 pacientes; test público: 176 pacientes. Los folds internos se forman dentro de train."><div class="split-track__train"></div><div class="split-track__test"></div></div><div class="split-legend"><span><i class="legend-dot legend-dot--train"></i>Train · 1.097</span><span><i class="legend-dot legend-dot--test"></i>Test · 176</span></div></article>
+        </div>
+        <p class="data-note">Duke, I-SPY1 e I-SPY2 tienen procesos de selección diferentes; las diferencias entre cohortes se analizarán como posible fuente de sesgo.</p>
+      </div>
+    </section>
+
+    <section class="architecture-section section" id="arquitectura" aria-labelledby="architecture-title">
+      <div class="section-shell mx-auto max-w-[1920px] px-6 lg:px-10">
+        <div class="section-label section-label--light"><span>03</span><span>La arquitectura</span></div>
+        <div class="section-heading grid gap-8 lg:grid-cols-[1fr_.74fr]"><div><p class="candidate-badge">E57 · modelo de referencia</p><h2 id="architecture-title" class="section-title">La red aprende patrones mientras reduce la resolución.</h2></div><p class="section-lead">CNN propia de ocho convoluciones. Construye PRE, EARLY−PRE y LATE−EARLY, conserva el escalado docente y usa solo imágenes, sin edad ni menopausia.</p></div>
+        <div class="architecture-summary"><span>Entrada <b>3 × 256 × 256</b></span><span aria-hidden="true">→</span><span>4 bloques</span><span aria-hidden="true">→</span><span>1 logit por corte</span><span class="architecture-summary__total">298.161 parámetros</span></div>
+        <div class="architecture-flow" role="group" aria-label="Bloques de E57">
+          <button type="button" class="architecture-node is-selected" data-block="1" aria-pressed="true"><span class="architecture-node__number">Bloque 01</span><span class="feature-stack feature-stack--one" aria-hidden="true"><i></i><i></i><i></i></span><strong>3 → 16</strong><span>128 × 128</span><small>2.800 parámetros</small></button>
+          <button type="button" class="architecture-node" data-block="2" aria-pressed="false"><span class="architecture-node__number">Bloque 02</span><span class="feature-stack feature-stack--two" aria-hidden="true"><i></i><i></i><i></i></span><strong>16 → 32</strong><span>64 × 64</span><small>13.952 parámetros</small></button>
+          <button type="button" class="architecture-node" data-block="3" aria-pressed="false"><span class="architecture-node__number">Bloque 03</span><span class="feature-stack feature-stack--three" aria-hidden="true"><i></i><i></i><i></i></span><strong>32 → 64</strong><span>32 × 32</span><small>55.552 parámetros</small></button>
+          <button type="button" class="architecture-node" data-block="4" aria-pressed="false"><span class="architecture-node__number">Bloque 04</span><span class="feature-stack feature-stack--four" aria-hidden="true"><i></i><i></i><i></i></span><strong>64 → 128</strong><span>16 × 16</span><small>221.696 parámetros</small></button>
+          <div class="architecture-node architecture-node--output"><span class="architecture-node__number">Salida</span><span class="output-glyph" aria-hidden="true">1</span><strong>Promedio global</strong><span>128 → 32 → 1</span><small>4.161 parámetros · ReLU + dropout 0,3</small></div>
+        </div>
+        <div class="architecture-detail" id="architecture-detail" aria-live="polite"><div class="architecture-detail__heading"><span id="detail-number">Bloque 01</span><h3 id="detail-title">Primeras características</h3></div><div><p id="detail-description">Dos convoluciones 3×3 combinan las fases transformadas. MaxPool está entre las dos convoluciones y reduce alto y ancho a la mitad.</p><p id="detail-rationale" class="architecture-detail__rationale">Hipótesis: empezar con 16 canales limita el coste sin perder la señal inicial. Su utilidad se evaluará en validación.</p></div><dl><div><dt>Tensor</dt><dd id="detail-shape">3 × 256 × 256 → 16 × 128 × 128</dd></div><div><dt>Operaciones</dt><dd id="detail-operations">Conv–BN–ReLU → MaxPool 2×2 → Conv–BN–ReLU; kernel 3×3, padding 1, stride 1</dd></div><div><dt>Parámetros</dt><dd id="detail-parameters">2.800</dd></div><div><dt>Campo receptivo teórico</dt><dd id="detail-receptive">8 × 8 píxeles</dd></div></dl></div>
+        <div class="architecture-choices"><div class="architecture-choices__intro"><h3>Por qué este diseño</h3><p>Son decisiones de partida, no ventajas demostradas todavía frente a otras redes.</p></div><div class="architecture-choices__grid grid gap-4 md:grid-cols-3"><article><span>01 / Restricción</span><h4>Desde cero</h4><p>El proyecto exige una CNN propia; no utilizamos arquitecturas importadas ni pesos preentrenados.</p></article><article><span>02 / Hipótesis</span><h4>Cuatro escalas</h4><p>Canales crecientes y resolución decreciente buscan equilibrar detalle, contexto y coste computacional.</p></article><article><span>03 / Control</span><h4>Salida compacta</h4><p>El promedio global evita un clasificador denso grande. Dropout intenta limitar el sobreajuste.</p></article></div></div>
+        <p class="architecture-footnote">El campo receptivo indicado es teórico, por posición, y no demuestra qué regiones usa realmente el modelo. E57 se mantiene fija en la comparación N01. En entrenamiento se promedian características por paciente; en evaluación se promedian probabilidades de sus cortes.</p>
+      </div>
+    </section>
+
+    <section class="experiments-section section" id="experimentos" aria-labelledby="experiments-title">
+      <div class="section-shell mx-auto max-w-[1920px] px-6 lg:px-10">
+        <div class="section-label"><span>04</span><span>Las decisiones</span></div>
+        <div class="section-heading grid gap-8 lg:grid-cols-[1fr_.78fr]"><h2 id="experiments-title" class="section-title">Una comparación con una pregunta concreta.</h2><p class="section-lead">N01 está preparado para comparar BCE normal y ponderada con la misma E57, cinco folds y semilla. La validación interna elegirá época y umbral; el exterior de desarrollo se consultará al final.</p></div>
+        <div class="technical-checks"><div class="technical-checks__heading"><h3>Antes del entrenamiento largo</h3><p>Estas comprobaciones validan el proceso, no miden la generalización de la CNN candidata.</p></div><div class="technical-checks__grid grid gap-4 md:grid-cols-3"><article><span>01 / Integridad</span><h4>38.109 PNG auditados</h4><p>Rutas y tamaños verificados, sin pacientes compartidas entre train y test.</p></article><article><span>02 / Cableado</span><h4>Red mínima</h4><p>Una CNN pequeña memorizó 24 muestras equilibradas: prueba de que datos, pérdida y gradientes funcionan.</p></article><article><span>03 / Flujo</span><h4>Ensayo general</h4><p>Dos épocas reducidas recorrieron carga, validación, métricas y checkpoints sin consultar test.</p></article></div></div>
+        <div class="experiment-pair grid gap-4 lg:grid-cols-2"><article><div class="experiment-pair__head"><span>N01 · normal</span><span>Referencia</span></div><h3>BCE normal</h3><p>Establece cómo se comporta la CNN base sin ponderar la clase positiva.</p></article><article><div class="experiment-pair__head"><span>N01 · ponderada</span><span>Una variable modificada</span></div><h3>BCE ponderada</h3><p>Usa <code>pos_weight=N0/N1</code> calculado únicamente con pacientes FIT. Hipótesis: podría aumentar la sensibilidad de pCR.</p></article></div>
+        <div class="experiment-question"><span>Pregunta experimental</span><p>¿Mejora la sensibilidad por paciente sin deteriorar de forma excesiva la especificidad y la calibración?</p><strong>N01 · comparación adicional de desarrollo</strong></div>
+      </div>
+    </section>
+
+    <section class="evaluation-section section" id="evaluacion" aria-labelledby="evaluation-title">
+      <div class="section-shell mx-auto max-w-[1920px] px-6 lg:px-10">
+        <div class="section-label"><span>05</span><span>La evaluación</span></div>
+        <div class="section-heading grid gap-8 lg:grid-cols-[1fr_.75fr]"><h2 id="evaluation-title" class="section-title">La métrica principal pertenece a la paciente.</h2><p class="section-lead">La CNN genera una probabilidad por corte; las predicciones de los cortes se agregan por paciente con un método elegido en validación interna.</p></div>
+        <div class="evaluation-board grid gap-10 lg:grid-cols-[.9fr_1.1fr]"><div><div class="evaluation-board__stamp"><span class="stamp-dot"></span> E57 original · test público ya evaluado</div><p>El checkpoint de época 14, entrenado con 878 pacientes y seleccionado con 219 de validación, obtuvo ROC-AUC <strong>0,5728</strong> en 176 pacientes de test (IC95: 0,4753–0,6706), AP <strong>0,4206</strong> y Brier <strong>0,2116</strong>. Es un resultado modesto, con incertidumbre amplia.</p><p>Con el umbral 0,325 fijado antes de test: TN 92, FP 31, FN 35 y TP 18; sensibilidad 33,96 % y especificidad 74,80 %. El AUC de validación 0,6703 seleccionó la época y es optimista. La media de cinco máximos 0,6224 tampoco es una estimación exterior independiente.</p><p>Estos datos pertenecen exclusivamente a E57 original. La comparación N01 se registra por separado; N01 no hereda ese test. Los intervalos son bootstrap de pacientes, 2.000 remuestreos y semilla 42. La demo estima un corte; las métricas anteriores agregan los cortes por paciente.</p><a href="/demo" class="text-link">Ir a la demostración <span aria-hidden="true">↗</span></a></div><div class="metric-list"><div><span>01</span><strong>Discriminación</strong><p>ROC-AUC y precisión–recall</p></div><div><span>02</span><strong>Errores</strong><p>Sensibilidad, especificidad y matriz de confusión</p></div><div><span>03</span><strong>Probabilidades</strong><p>Calibración y Brier score</p></div><div><span>04</span><strong>Incertidumbre</strong><p>Intervalos bootstrap por paciente</p></div></div></div>
+      </div>
+    </section>
+
+    <section class="limits-section section" aria-labelledby="limits-title"><div class="section-shell mx-auto grid max-w-[1920px] gap-10 px-6 lg:grid-cols-[.85fr_1.15fr] lg:gap-24 lg:px-10"><div><div class="section-label"><span>06</span><span>Los límites</span></div><h2 id="limits-title" class="section-title">Una estimación requiere contexto.</h2></div><div><p>Los cortes de una misma paciente están correlacionados. Las cohortes difieren en adquisición y selección de cortes. Una buena validación retrospectiva no demuestra utilidad clínica prospectiva.</p><p>La probabilidad estimada de pCR no expresa supervivencia ni curación, y nunca debe justificar omitir cirugía o cambiar un tratamiento.</p></div></div></section>
+
+    <section class="closing-section" aria-labelledby="closing-title"><div class="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-8 px-6 py-16 lg:px-10"><div><p>Demostración reproducible</p><h2 id="closing-title">Comprueba cómo funciona con tres fases.</h2></div><a href="/demo" class="button button--rose">Probar la CNN <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="mx-auto flex max-w-[1920px] flex-wrap justify-between gap-5 px-6 py-7 lg:px-10"><span>BreastDCEDL · Proyecto académico individual</span><span>Uso educativo y de investigación · Sin validez clínica</span></div></footer>
+</body>
+</html>
