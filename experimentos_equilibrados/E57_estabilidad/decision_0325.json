@@ -1,0 +1,9 @@
+{
+  "schema": "e57_posthoc_decision_v1",
+  "threshold": 0.325,
+  "selection_status": "human_requested_posthoc",
+  "requested_on": "2026-10-19",
+  "independent_evaluation": false,
+  "test_evaluated": false,
+  "note": "Vista solicitada por el estudiante después de revisar los folds; no reemplaza las métricas históricas a 0,5 ni modifica pesos o probabilidades."
+}
