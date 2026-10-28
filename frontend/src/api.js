@@ -1,6 +1,9 @@
 // Comunicación con el servidor de Python (app.py). Toda la inferencia ocurre allí,
 // con el mismo preprocesado que en el entrenamiento; aquí solo se envían y reciben datos.
 const FASES = ['PRE', 'EARLY', 'LATE']
+// Vacío: la API está en el mismo origen (app.py sirve la interfaz). Si la interfaz se aloja en
+// otro dominio, VITE_API_URL apunta al servidor del modelo (p. ej. un Hugging Face Space).
+const API = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 async function leer(respuesta) {
   const datos = await respuesta.json().catch(() => ({}))
@@ -11,7 +14,7 @@ async function leer(respuesta) {
 async function pedir(url, opciones) {
   let respuesta
   try {
-    respuesta = await fetch(url, opciones)
+    respuesta = await fetch(API + url, opciones)
   } catch {
     throw new Error('No se puede conectar con el servidor del modelo. Comprueba que app.py está en marcha.')
   }
@@ -21,10 +24,23 @@ async function pedir(url, opciones) {
 export const obtenerModelo = () => pedir('/api/modelo')
 
 // archivos: { PRE: File, EARLY: File, LATE: File }
-export function predecir(archivos) {
+function formularioFases(archivos) {
   const formulario = new FormData()
   for (const fase of FASES) formulario.append(fase, archivos[fase], archivos[fase].name || `${fase}.png`)
-  return pedir('/api/predict', { method: 'POST', body: formulario })
+  return formulario
+}
+
+export const predecir = (archivos) => pedir('/api/predict', { method: 'POST', body: formularioFases(archivos) })
+
+// Mapa de oclusión del mismo corte: el servidor tapa cada cuadro y vuelve a predecir.
+export const mapaOclusion = (archivos) => pedir('/api/occlusion', { method: 'POST', body: formularioFases(archivos) })
+
+// pCR real del corte según el CSV de datos, o null si el corte no está en él.
+export async function etiquetaReal(clave) {
+  try {
+    const r = await fetch(`${API}/api/etiqueta/${encodeURIComponent(clave)}`)
+    return r.ok ? (await r.json()).pcr : null
+  } catch { return null }
 }
 
 // Los ejemplos se envían exactamente igual que una subida: así pasan por la misma validación.

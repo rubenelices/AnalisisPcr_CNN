@@ -20,6 +20,18 @@ export function agrupar(lista) {
   return { grupos: ordenados.map(([clave, archivos]) => ({ clave, archivos })), sueltos }
 }
 
+export const FASES_ORDEN = ['PRE', 'EARLY', 'LATE']
+export const faseDe = (nombre) => (nombre.match(FASE)?.[2] ?? '').toUpperCase()
+
+// Une ficheros de un mismo corte llegados en momentos distintos: una fase por fichero (si una fase vuelve a
+// llegar, sustituye a la anterior), ordenadas PRE, EARLY, LATE. Con las tres, el corte se puede calcular.
+export function unirFases(...listas) {
+  const porFase = {}
+  for (const a of listas.flat()) if (faseDe(a.name)) porFase[faseDe(a.name)] = a
+  return FASES_ORDEN.filter((f) => porFase[f]).map((f) => porFase[f])
+}
+export const faltan = (archivos) => FASES_ORDEN.filter((f) => !archivos.some((a) => faseDe(a.name) === f))
+
 // Ficheros de un arrastre, entrando en las carpetas que se suelten.
 export async function archivosDeArrastre(dt) {
   const entradas = [...(dt.items ?? [])].map((i) => i.webkitGetAsEntry?.()).filter(Boolean)
@@ -43,10 +55,11 @@ export async function archivosDeArrastre(dt) {
 
 // Tabla de resultados en texto separado por tabuladores (se pega tal cual en una hoja de cálculo).
 export function tablaTexto(filas) {
-  const cabecera = ['corte', 'probabilidad_pcr', 'clase', 'umbral', 'modelo', 'sha256', 'dispositivo', 'ms']
-  const lineas = filas.filter((f) => f.estado === 'listo').map(({ clave, resultado: r }) => [
+  const cabecera = ['corte', 'probabilidad_pcr', 'clase', 'umbral', 'modelo', 'sha256', 'dispositivo', 'ms', 'pcr_real', 'acierto']
+  const lineas = filas.filter((f) => f.estado === 'listo').map(({ clave, resultado: r, real }) => [
     clave, r.probability_pcr.toFixed(6), r.predicted_class === 1 ? 'pCR' : 'sin pCR', r.threshold,
     r.model_version, r.model_sha256, r.device, Math.round(r.latency_ms),
+    real == null ? '' : (real === 1 ? 'pCR' : 'sin pCR'), real == null ? '' : (r.predicted_class === real ? 'sí' : 'no'),
   ].join('\t'))
   return [cabecera.join('\t'), ...lineas].join('\n')
 }

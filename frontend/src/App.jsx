@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion, useScroll } from 'framer-motion'
 import { Cabecera, RUTAS } from './componentes/Cabecera.jsx'
 import { Pie } from './componentes/Pie.jsx'
 import { Portada } from './paginas/Portada.jsx'
@@ -9,14 +9,41 @@ import { Resultados } from './paginas/Resultados.jsx'
 import { Pruebas } from './paginas/Pruebas.jsx'
 import { EJEMPLOS } from './ejemplo.js'
 import { validarFases } from './subida.js'
-import { agrupar } from './lote.js'
-import { archivosDeEjemplo, obtenerModelo, predecir } from './api.js'
+import { agrupar, unirFases } from './lote.js'
+import { archivosDeEjemplo, etiquetaReal, obtenerModelo, predecir } from './api.js'
 
 // Rutas con almohadilla (#/prediccion): funcionan en cualquier alojamiento estático
 // y el botón atrás del navegador vuelve a la sección anterior.
 const leerRuta = () => {
   const r = window.location.hash.replace(/^#\/?/, '')
   return RUTAS.some((x) => x.id === r) ? r : ''
+}
+
+// Animaciones de scroll: cada bloque de una sección (título, texto, figura…) entra una vez, subiendo y
+// apareciendo, con un pequeño escalonado entre hermanos. El CSS solo lo oculta si JS ha marcado el bloque.
+function useRevelarAlHacerScroll(clave, reducir) {
+  useEffect(() => {
+    const raiz = document.querySelector('.hoja')
+    if (!raiz || reducir || !('IntersectionObserver' in window)) return
+    const io = new IntersectionObserver((entradas) => entradas.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('visto'); io.unobserve(e.target) }
+    }), { rootMargin: '0px 0px -8% 0px', threshold: 0.06 })
+    let cuadro = 0
+    const marcar = () => {
+      cuadro = 0
+      raiz.querySelectorAll('.papel-seccion > *').forEach((el) => {
+        if (el.dataset.rv) return
+        el.dataset.rv = '1'
+        const hermanos = [...el.parentElement.children]
+        el.style.setProperty('--rv', `${Math.min(hermanos.indexOf(el), 4) * 70}ms`)
+        io.observe(el)
+      })
+    }
+    const mo = new MutationObserver(() => { if (!cuadro) cuadro = requestAnimationFrame(marcar) })
+    mo.observe(raiz, { childList: true, subtree: true })
+    marcar()
+    return () => { mo.disconnect(); io.disconnect(); cancelAnimationFrame(cuadro) }
+  }, [clave, reducir])
 }
 
 export default function App() {
@@ -32,12 +59,19 @@ export default function App() {
   const [procesando, setProcesando] = useState(false)
   // Últimas predicciones de la sesión, para el encabezado (la más reciente primero).
   const [historial, setHistorial] = useState([])
-  const registrar = useCallback((clave, r, origen, fases) => setHistorial((prev) => [
-    { clave, p: r.probability_pcr, clase: r.predicted_class, umbral: r.threshold, origen, fases },
-    ...prev.filter((h) => h.clave !== clave),
-  ]), [])
+  // Mientras un corte espera alguna fase, el encabezado muestra las que ya han llegado.
+  const [verEspera, setVerEspera] = useState(false)
+  const registrar = useCallback((clave, r, origen, fases) => {
+    setVerEspera(false)
+    setHistorial((prev) => [
+      { clave, p: r.probability_pcr, clase: r.predicted_class, umbral: r.threshold, origen, fases },
+      ...prev.filter((h) => h.clave !== clave),
+    ])
+  }, [])
   const ultima = useRef(null)  // evita que una respuesta antigua pise a una más reciente
   const reducir = useReducedMotion()
+  useRevelarAlHacerScroll(ruta, reducir)
+  const { scrollYProgress } = useScroll()
 
   useEffect(() => {
     const alCambiar = () => { setRuta(leerRuta()); window.scrollTo({ top: 0 }) }
@@ -69,7 +103,10 @@ export default function App() {
 
   const elegirEjemplo = (id) => { setEntrada({ tipo: 'ejemplo', id }); ir('prediccion'); cargarEjemplo(id) }
 
-  // Cada corte del lote se valida y se predice en orden, uno detrás de otro.
+  // Cada corte del lote se valida y se predice en orden, uno detrás de otro. Las fases pueden llegar sueltas y en
+  // varios envíos: un corte incompleto queda «esperando» y, cuando llega la fase que falta, se calcula.
+  const loteRef = useRef([])
+  loteRef.current = lote
   const procesar = async (ficheros) => {
     if (!ficheros?.length) return
     ir('pruebas')
@@ -77,25 +114,28 @@ export default function App() {
     setSueltos(fuera)
     if (!grupos.length) return
     const sello = Date.now()
-    const filas = grupos.map((g, i) => ({ id: `${sello}-${i}`, clave: g.clave, archivos: g.archivos, estado: 'comprobando' }))
+    const previas = new Map(loteRef.current.filter((f) => f.estado === 'esperando').map((f) => [f.clave, f]))
+    const filas = grupos.map((g, i) => {
+      const previa = previas.get(g.clave)
+      const archivos = unirFases(previa?.archivos ?? [], g.archivos)
+      const completo = archivos.length === 3
+      return { ...(previa ?? {}), id: previa?.id ?? `${sello}-${i}`, clave: g.clave, archivos, estado: completo ? 'comprobando' : 'esperando', errores: undefined }
+    })
+    const ids = new Set(filas.map((f) => f.id))
+    setLote((prev) => [...filas.filter((f) => !prev.some((p) => p.id === f.id)), ...prev.map((p) => filas.find((f) => f.id === p.id) ?? p)])
+    setVerEspera(filas.some((f) => f.estado === 'esperando'))
     const cambiar = (id, datos) => setLote((prev) => prev.map((f) => (f.id === id ? { ...f, ...datos } : f)))
-    setLote((prev) => [...filas, ...prev])
     setProcesando(true)
+    try {
     for (const fila of filas) {
-      if (fila.archivos.length !== 3) {
-        const fases = fila.archivos.map((f) => f.name.match(/_(PRE|EARLY|LATE)\.png$/i)[1].toUpperCase())
-        const faltan = ['PRE', 'EARLY', 'LATE'].filter((f) => !fases.includes(f))
-        cambiar(fila.id, { estado: 'error', errores: [faltan.length
-          ? `Falta ${faltan.join(' y ')}: este corte solo tiene ${fases.join(', ')}.`
-          : `Hay fases repetidas (${fases.join(', ')}): debe haber exactamente una de cada.`] })
-        continue
-      }
+      if (fila.estado === 'esperando') continue
       const v = await validarFases(fila.archivos)
       if (v.errores.length) { cambiar(fila.id, { estado: 'error', errores: v.errores }); continue }
       cambiar(fila.id, { estado: 'calculando', fases: v.fases, realce: v.realce, archivos: v.archivos })
       try {
         const r = await predecir(v.archivos)
-        cambiar(fila.id, { estado: 'listo', resultado: r })
+        const real = await etiquetaReal(fila.clave)
+        cambiar(fila.id, { estado: 'listo', resultado: r, real })
         ultima.current = fila.clave
         setResultado({ estado: 'listo', clave: fila.clave, ...r })
         registrar(fila.clave, r, { tipo: 'lote', id: fila.id }, v.fases.map((f) => f.src))
@@ -103,7 +143,8 @@ export default function App() {
         cambiar(fila.id, { estado: 'error', errores: [e.message] })
       }
     }
-    setProcesando(false)
+    } finally { setProcesando(false) }
+    return ids
   }
 
   const probarEjemplos = async () => {
@@ -113,7 +154,7 @@ export default function App() {
   }
 
   const verDetalle = (fila) => {
-    setEntrada({ tipo: 'subida', nombre: fila.clave, fases: fila.fases, realce: fila.realce })
+    setEntrada({ tipo: 'subida', nombre: fila.clave, fases: fila.fases, realce: fila.realce, archivos: fila.archivos })
     ultima.current = fila.clave
     setResultado({ estado: 'listo', clave: fila.clave, ...fila.resultado })
     ir('prediccion')
@@ -142,7 +183,9 @@ export default function App() {
   return (
     <>
       <Cabecera ruta={ruta} ir={ir} entrada={entrada} onSubir={(f) => procesar([...f])} onEjemplo={elegirEjemplo}
-        resultado={resultado} modelo={modelo} ocupado={procesando || resultado.estado === 'cargando'} historial={historial} onAbrirHistorial={abrirHistorial} />
+        resultado={resultado} modelo={modelo} ocupado={procesando || resultado.estado === 'cargando'} historial={historial} onAbrirHistorial={abrirHistorial}
+        espera={verEspera ? lote.find((f) => f.estado === 'esperando') : null} />
+      <motion.div className="progreso-pagina" style={{ scaleX: scrollYProgress }} aria-hidden="true" />
       <div className="hoja">
       <AnimatePresence mode="wait" initial={false}>
         <motion.main key={ruta || 'portada'}

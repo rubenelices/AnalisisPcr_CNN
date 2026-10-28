@@ -1,0 +1,25 @@
+{
+  "schema": "e57_public_test_frozen_v1",
+  "frozen_at_utc": "2026-10-20T08:12:33.122342+00:00",
+  "checkpoint": "checkpoints/E57_patient_feature_mean_mac/fold_0_seed_42/best.pt",
+  "checkpoint_sha256": "a1fb12dfae2c3d6b730ae0b1d916727981154116077e40aa64799415b8cfde5f",
+  "epoch": 14,
+  "threshold": 0.325,
+  "aggregation": "mean_cut_probabilities",
+  "clinical_inputs": [],
+  "augmentation": false,
+  "calibration_fitted": false,
+  "seed": 42,
+  "bootstrap_repetitions": 2000,
+  "batch_size": 16,
+  "source_sha256": {
+    "evaluate_e57_final.py": "9601930663c3c06b47b2256475cfabd06e7db2bcf6980c23c35352961e87ce54",
+    "patient_feature_model.py": "d9e6afd8557d5fa3784ddf2d0c9a2337dca553f5f540bb9e72107c7e6dc1d5d9",
+    "architectures.py": "0727347de08c9f4e21174eb974c840c33845013cbddd277e188dcc937d371b1d",
+    "data.py": "820349e43a603a6b33aeb9f43f7417de1a160805ca08cd4efcaf30592b9be412",
+    "phase_representation.py": "eb8a035b65b46c1c75cb37a12472b82e9c8e49c9a1a48a3ffae3827d2c2a46e8",
+    "evaluation.py": "b3b5cf779af60de9692b8cfe237a420665e53cec1c9032b7b9347714aaab9db3",
+    "metrics.py": "39a0be1474b4983bd18f5531cd7ccd80730f4c8b74e118dc637e906cf5e46425"
+  },
+  "note": "Congelado el 20 de octubre antes de abrir test: una única evaluación, sin selección posterior con test."
+}

@@ -5,12 +5,12 @@ import { fmt } from '../datos.js'
 // Gráficas en SVG propias de la web: mismos colores y tipografía que el resto, y las líneas
 // se dibujan al entrar en pantalla. Cada gráfica declara sus dominios; los hijos usan la escala.
 export const COLOR = {
-  train: '#2f5d8a',      // entrenamiento / FIT
-  valid: '#c26a2c',      // validación interna
-  test: '#1d2730',       // test o pacientes no vistas
-  ref: '#2f7d4f',        // buen modelo teórico
-  azar: '#8a949d',
-  acento: '#b5367a',
+  train: '#6aa6e0',      // entrenamiento / FIT
+  valid: '#e8934f',      // validación interna
+  test: '#e8ebed',       // test o pacientes no vistas
+  ref: '#5fc08a',        // buen modelo teórico
+  azar: '#6b7680',
+  acento: '#d8689f',
 }
 
 const Escala = createContext(null)
@@ -97,7 +97,7 @@ export function Diagonal() {
 export function Puntos({ datos, color, r = 5 }) {
   const { sx, sy } = useContext(Escala)
   return datos.map(([a, b], i) => (
-    <motion.circle key={i} cx={sx(a)} cy={sy(b)} r={r} fill={color} stroke="#fff" strokeWidth={1.5}
+    <motion.circle key={i} cx={sx(a)} cy={sy(b)} r={r} fill={color} stroke="#151a21" strokeWidth={1.5}
       initial={{ opacity: 0, scale: 0.6 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
       transition={{ delay: 0.2 + i * 0.05, duration: 0.35 }} />
   ))

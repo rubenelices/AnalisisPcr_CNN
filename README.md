@@ -1,128 +1,72 @@
-# Prediccion de pCR con DCE-MRI
+# Predicción de pCR con DCE-MRI y una CNN 2D desde cero
 
-Proyecto individual de Aprendizaje Automatico para predecir la respuesta
-patologica completa (pCR) a partir de tres fases de una DCE-MRI previa al
-tratamiento: PRE, EARLY y LATE.
+Proyecto de Aprendizaje Automático (Universidad Alfonso X el Sabio, 2026–2027). Estima la probabilidad de **respuesta patológica completa (pCR)** a la quimioterapia neoadyuvante en cáncer de mama a partir de las tres fases de una DCE-MRI previa al tratamiento (PRE, EARLY y LATE), con una CNN 2D diseñada y entrenada desde cero en PyTorch, sin transfer learning ni pesos preentrenados.
 
-La solucion debe emplear una CNN 2D disenada y entrenada completamente desde
-cero. No se permite transfer learning ni el uso de arquitecturas o pesos
-preentrenados.
+**Pesos del modelo:** [huggingface.co/RubenElices/BreastDCEDL](https://huggingface.co/RubenElices/BreastDCEDL) · **Resultados:** [nuevo_enfoque/RESULTADOS.ipynb](nuevo_enfoque/RESULTADOS.ipynb) · **Presentación:** [docs/presentacion](docs/presentacion/presentacion.pdf)
 
-## Documentacion del proyecto
+## Resultado
 
-- [Plan de trabajo](PLAN.md)
-- [Contexto y reglas para asistentes](AGENTS.md)
-- [Guia suministrada con los datos](breastdcedl/GUIA.md)
-- [Enunciado oficial](breastdcedl/documentation/caso_breastdcedl.pdf)
+El modelo entregado es **E57**: 298.161 parámetros, entrada por corte `[3, 256, 256]` (fases temporales, no RGB), media de las probabilidades de los cortes por paciente y umbral 0,325 fijado antes de abrir el test.
 
-El repositorio incluye una configuracion ligera de Visual Studio Code que evita
-indexar continuamente las imagenes del dataset, sin ocultarlas ni impedir que el
-codigo las utilice.
+| Evaluación | AUC por paciente |
+|---|---|
+| Test público (176 pacientes, evaluado una sola vez) | **0,573** [IC95 0,475–0,671] |
+| Validación cruzada de la receta en 5 folds (1.097 pacientes, predicciones fuera de fold) | 0,507 |
+| Solo la cohorte de origen (línea base) | 0,523 |
 
-## Datos
+La señal que la red extrae de la imagen no supera de forma demostrable a saber de qué cohorte procede la paciente. Las hipótesis probadas para mejorarla (recetas de entrenamiento, aumento geométrico, recortes, realce relativo, ensembles de semillas) tienen sus criterios escritos antes de ejecutar y sus resultados, también los negativos, en [nuevo_enfoque/](nuevo_enfoque/README.md).
 
-El paquete `breastdcedl/` se mantiene exclusivamente en local e incluye las
-38.109 imagenes, metadatos y documentacion original. Toda la carpeta esta
-ignorada por Git; el repositorio contiene solo nuestro codigo y documentacion.
+## Estructura
 
-Este proyecto es exclusivamente educativo y de investigacion. No constituye un
-dispositivo medico ni puede emplearse para diagnostico o decisiones terapeuticas.
+| Ruta | Contenido |
+|---|---|
+| `src/` | Código: datos y preprocesado, arquitecturas, entrenamiento, evaluación, análisis estadísticos, inferencia y generación de resultados |
+| `tests/` | Tests de software con datos sintéticos |
+| `configs/` | Configuraciones de los experimentos (E57, N01, P01, P02…) |
+| `nuevo_enfoque/` | Protocolo, hipótesis y decisiones de cada experimento, y el notebook de resultados |
+| `E57/` | Dossier del modelo entregado: 5 folds, test y gráficas |
+| `experimentos/` | Fichas de arquitectura con diagramas de volúmenes y capas reales |
+| `experimentos_equilibrados/`, `experimentos_datos/` | Repeticiones de E57 en otros folds y referencia con edad/menopausia |
+| `app.py`, `frontend/` | Demo web: API Flask de inferencia e interfaz React |
+| `web/` | Demo HTML anterior (servida en `/demo`) |
+| `modelo/` | Protocolo congelado del modelo entregado (umbral, agregación y SHA-256 del checkpoint) |
+| `deploy/` | Despliegue en Hugging Face Spaces |
+| `docs/` | Presentación y guion de defensa |
 
-## Primera fase: auditoria
-
-La auditoria completa valida metadatos y abre las 38.109 imagenes sin modificar
-los datos originales:
-
-```bash
-python -m src.audit_data
-```
-
-Durante el desarrollo puede ejecutarse una comprobacion mas rapida:
+## Uso
 
 ```bash
-python -m src.audit_data --image-check sample --sample-size 200
+pip install -r requirements.txt
+python -m pytest -q tests
 ```
 
-Los resultados se generan en `reports/audit/`: informe HTML, JSON estructurado,
-catalogo de fuentes y figuras descriptivas.
-
-## Segunda fase: pipeline de datos
-
-El smoke test del pipeline crea las particiones por paciente, carga un batch de
-train y otro de validacion y comprueba forma, tipo, rango y orden secuencial:
+Los datos de BreastDCEDL no se incluyen: se descargan del sitio oficial y se colocan en `breastdcedl/`. Los checkpoints, informes generados (`reports/`) y pesos quedan fuera del repositorio.
 
 ```bash
-python -m src.data
+python -m src.train_new_approach run --loss normal --fold 0 --device mps   # receta de E57 con el protocolo N01
+python -m src.cuaderno_resultados                                          # regenera nuevo_enfoque/RESULTADOS.ipynb
 ```
 
-La funcion `src.data.load_dce_triplet` es compartida por el Dataset y por la
-futura aplicacion. Acepta rutas o bytes y siempre devuelve PRE, EARLY y LATE en
-un tensor `float32` de forma `[3, 256, 256]` y rango `[0, 1]`.
-
-## Tercera fase: CNN minima
-
-La CNN educativa y su prueba de memorizacion se ejecutan con:
+### Demo web en local
 
 ```bash
-python -m src.overfit_smoke
+npm --prefix frontend ci && npm --prefix frontend run build
+BREAST_PCR_HF_REPO=RubenElices/BreastDCEDL python app.py
 ```
 
-El recorrido explicado paso a paso esta en
-`notebooks/03_cnn_minima.ipynb`. El notebook reutiliza `src/model.py` y
-`src/overfit_smoke.py`; la logica del proyecto no depende de celdas ocultas ni
-de su orden de ejecucion.
+Abre `http://127.0.0.1:8000`. Si el checkpoint no está en `checkpoints/`, se descarga del repositorio de Hugging Face y se verifica su SHA-256 contra [modelo/protocolo_e57.json](modelo/protocolo_e57.json). El servidor no guarda las imágenes recibidas. Despliegue: [deploy/README.md](deploy/README.md).
 
-## Cuarta fase: arquitectura base y experimentos
+## Protocolo experimental
 
-La primera arquitectura candidata esta implementada desde cero en
-`src/architectures.py`. Recibe `[B, 3, 256, 256]`, contiene cuatro bloques
-convolucionales y genera un logit por corte. Su explicacion capa por capa,
-incluidos dimensiones, parametros y campo receptivo, esta en
-`notebooks/04_arquitectura_base.ipynb`.
+- La unidad estadística es la paciente: todas las particiones están agrupadas por paciente; los cortes de una paciente nunca se reparten entre particiones.
+- Cada fold separa FIT (entrenamiento), validación interna (época y umbral) y fold exterior (evaluación honesta).
+- El test público no se usa para elegir arquitectura, hiperparámetros, umbral, épocas ni agregación.
+- Se comparan `BCEWithLogitsLoss` normal y ponderada (`pos_weight = N0/N1`).
+- Los aumentos geométricos se aplican sincronizados a las tres fases; no hay normalización ImageNet ni aumentos de color.
+- El preprocesado es idéntico en entrenamiento, evaluación y web.
 
-Para verla como diagrama dentro de Visual Studio Code, abre
-`docs/ARQUITECTURA_CNN.md` y activa la vista previa Markdown. Tambien puede
-imprimirse la estructura real de PyTorch sin cargar imagenes ni entrenar:
+## Datos y licencia
 
-```bash
-python -m src.inspect_architecture
-```
+BreastDCEDL (cohortes Duke, I-SPY1 e I-SPY2), licencia [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). La web incluye unos pocos cortes de ejemplo con atribución ([frontend/public/LICENCIA_IMAGENES.md](frontend/public/LICENCIA_IMAGENES.md)).
 
-Antes de ocupar una maquina durante horas puede hacerse un cronometraje corto:
-
-```bash
-python -m src.benchmark_training \
-  --config configs/experiments/E02_base_normal.json \
-  --batch-size 16 --steps 4
-```
-
-En una maquina con GPU CUDA, los dos primeros experimentos se lanzan por
-separado:
-
-```bash
-python -m src.train --config configs/experiments/E02_base_normal.json --device cuda
-python -m src.train --config configs/experiments/E03_base_weighted.json --device cuda
-```
-
-E02 utiliza la perdida binaria normal y E03 cambia unicamente a perdida
-ponderada. Cada ejecucion guarda su configuracion resuelta, entorno, historial
-por epoca, curvas y resumen en `reports/experiments/`. Los checkpoints mejor y
-ultimo se guardan aparte en `checkpoints/`, que esta excluida de Git. Durante
-estos experimentos solo se consulta train y validacion interna; test permanece
-cerrado.
-
-La guia `docs/RESULTADOS_ESPERADOS.md` explica que debe observarse en las cinco
-primeras epocas y como leer el panel visual generado al terminar.
-
-### Smoke test integral
-
-Antes del entrenamiento largo, el ensayo general reducido se ejecuta con:
-
-```bash
-python -m src.smoke_training
-```
-
-Usa 4 pacientes de cada clase para train, 2 de cada clase para validacion y 2
-epocas. Recorre carga de imagenes, forward, loss, backward, optimizador,
-validacion, metricas, curvas y checkpoints. Sus cifras predictivas no miden la
-calidad de la red y quedan marcadas como `scientific_result: false`.
+**Uso educativo, sin validez clínica.** La probabilidad no es un diagnóstico, ni supervivencia, ni una recomendación terapéutica.

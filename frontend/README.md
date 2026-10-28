@@ -1,8 +1,11 @@
-# React + Vite
+# Interfaz web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite. Toda la inferencia ocurre en el servidor Python ([app.py](../app.py)) con el mismo preprocesado que en el entrenamiento; la interfaz solo envía las tres fases y muestra la respuesta.
 
-Currently, two official plugins are available:
+```bash
+npm ci
+npm run dev     # desarrollo; /api se redirige a app.py en el puerto 8000
+npm run build   # compila en dist/, que app.py sirve en /
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+`VITE_API_URL` permite apuntar a un servidor en otro dominio (ver [deploy/README.md](../deploy/README.md)). Las cifras y gráficas de Resultados se generan con `python -m src.web_resultados` y `python -m src.web_graficas` en `public/resultados/`.

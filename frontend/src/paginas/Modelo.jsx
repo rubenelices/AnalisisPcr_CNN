@@ -118,7 +118,7 @@ function GraficasEntrenamiento({ g, r }) {
           <Horizontal y={0.5} etiqueta="azar" lado="izquierda" />
           <Horizontal y={g.auc_referencia} color={COLOR.ref} tipo="puntos" etiqueta="buen modelo" lado="izquierda" />
           <Barras datos={[{ x: 1, y: e.picos_folds[0], color: COLOR.valid }, { x: 2, y: r.picos_e57.media, color: '#dca06f' },
-            { x: 3, y: e.cv_anidada, color: '#56626d' }, { x: 4, y: t.auc, color: COLOR.test }]} />
+            { x: 3, y: e.cv_anidada, color: '#8793a0' }, { x: 4, y: t.auc, color: COLOR.test }]} />
           {[e.picos_folds[0], r.picos_e57.media, e.cv_anidada, t.auc].map((v, i) => <Texto key={i} x={i + 1} y={v} dy={-8}>{fmt(v, 3)}</Texto>)}
           {['Validación, fold 0', 'Media 5 folds', 'Anidada 5 folds', 'Test (una vez)'].map((s, i) => <Texto key={s} x={i + 1} y={0.4} dy={20} clase="tick">{s}</Texto>)}
         </Grafico>

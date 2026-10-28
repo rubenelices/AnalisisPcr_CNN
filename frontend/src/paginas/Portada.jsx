@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from 'framer-motion'
+import { AnimatePresence, motion, useInView, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Boton } from '../componentes/Boton.jsx'
 import { IconoAvanzar } from '../componentes/Iconos.jsx'
 import { COLOR, Grafico, Horizontal, Linea, Puntos, Texto, Vertical } from '../componentes/Graficas.jsx'
 import { Contador, EXPO, Revelar } from '../componentes/Movimiento.jsx'
 import { useCanales } from '../canales.js'
 import { EJEMPLOS } from '../ejemplo.js'
-import { fmt, useGraficas, useResumen } from '../datos.js'
+import { fmt, mil, useGraficas, useResumen } from '../datos.js'
 
 // ---------------------------------------------------------------- visuales de cada paso
 
@@ -56,29 +56,66 @@ function VisCanales() {
   )
 }
 
-function VisParticiones() {
-  const reducir = useReducedMotion()
-  const puntos = Array.from({ length: 110 }, (_, i) => {
-    const fold = Math.floor(i / 22)
-    if (fold === 0) return 'exterior'
-    return (i - 22) % 5 === 4 ? 'interna' : 'fit'
-  })
+const NOMBRE_COHORTE = { spy1: 'I-SPY1', spy2: 'I-SPY2', duke: 'Duke' }
+const ORDEN_COHORTES = ['duke', 'spy1', 'spy2']   // de arriba abajo en cada columna
+
+// Reparto real de las pacientes en los 5 folds del profesor (src/web_resultados.py). Un punto es una paciente:
+// azul sin pCR, rosa con pCR; cada columna se agrupa por cohorte (Duke, I-SPY1, I-SPY2, de arriba abajo).
+// Al pulsar un fold se usa como validación y las tablas se recalculan con el resto.
+function VisParticiones({ r }) {
+  const { folds, test, cohortes } = r.particiones
+  const [val, setVal] = useState(folds.length - 1)
+  const resto = folds.filter((f) => f.fold !== val)
+  const f = folds.find((x) => x.fold === val)
+  const suma = (k) => resto.reduce((a, x) => a + x[k], 0)
+  const ent = { pacientes: suma('pacientes'), cortes: suma('cortes'), pcr: suma('pcr'), cortes_pcr: suma('cortes_pcr') }
+  const pc = (a, n) => `${fmt((a / n) * 100, 1)} %`
+  const neg = ent.cortes - ent.cortes_pcr
+  const grupo = (n, p, clave) => (
+    <span key={clave} className="part-grupo">{[...Array(n - p).fill('n'), ...Array(p).fill('p')].map((t, i) => <i key={i} className={t} />)}</span>
+  )
   return (
     <div className="vis vis-particiones">
-      <div className="vis-puntos">
-        {puntos.map((p, i) => (
-          <motion.span key={i} className={`pt pt-${p}`} initial={{ opacity: 0, scale: reducir ? 1 : 0.4 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: reducir ? 0 : (i % 22) * 0.012 + Math.floor(i / 22) * 0.08, duration: 0.3 }} />
-        ))}
+      <div className="part-cabeza">
+        <h4>Reparto de pacientes en cinco folds</h4>
+        <p>Los cortes de una paciente nunca se reparten entre entrenamiento y validación. <b>Pulsa un fold</b> para usarlo como validación.</p>
       </div>
-      <div className="vis-puntos test">{Array.from({ length: 18 }, (_, i) => <span key={i} className="pt pt-test" />)}</div>
-      <ul className="vis-leyenda">
-        <li><span className="pt pt-exterior" />Fold exterior: 219 pacientes no vistas</li>
-        <li><span className="pt pt-fit" />FIT: 80 % del resto, entrena</li>
-        <li><span className="pt pt-interna" />Validación interna: 20 %, elige época y umbral</li>
-        <li><span className="pt pt-test" />Test público: aparte, una sola evaluación</li>
-      </ul>
-      <p className="vis-pie">Cada punto son unas 10 pacientes. Todos los cortes de una paciente van siempre al mismo grupo.</p>
+      <div className="part-cuerpo">
+        <div>
+          <div className="part-folds" role="group" aria-label="Elige el fold que actúa como validación">
+            {folds.map((x) => (
+              <button key={x.fold} className={x.fold === val ? 'part-fold activo' : 'part-fold'} onClick={() => setVal(x.fold)} aria-pressed={x.fold === val}>
+                <span className="part-nombre">{x.fold === val ? 'Validación' : `Fold ${x.fold}`}</span>
+                <span className="part-puntos">{ORDEN_COHORTES.filter((c) => x.cohortes[c]).map((c) => grupo(x.cohortes[c].pacientes, x.cohortes[c].pcr, c))}</span>
+              </button>
+            ))}
+            <span className="part-sep" aria-hidden="true" />
+            <div className="part-fold test" aria-label="Test público, aparte">
+              <span className="part-nombre">Test</span>
+              <span className="part-puntos"><span className="part-grupo">{Array.from({ length: test.pacientes }, (_, i) => <i key={i} className="t" />)}</span></span>
+            </div>
+          </div>
+          <p className="part-leyenda"><i className="n" /> sin pCR <i className="p" /> pCR <i className="t" /> test, aparte <span className="part-orden">Cada columna, de arriba abajo: {ORDEN_COHORTES.map((c) => NOMBRE_COHORTE[c]).join(', ')}.</span></p>
+        </div>
+        <div className="part-lado">
+          <table className="tabla part-tabla">
+            <thead><tr><th>Fold {val} como validación</th><th className="num">Pacientes</th><th className="num">Cortes</th><th className="num">pCR</th></tr></thead>
+            <tbody>
+              <tr><td>Entrenamiento</td><td className="num">{mil(ent.pacientes)}</td><td className="num">{mil(ent.cortes)}</td><td className="num">{pc(ent.pcr, ent.pacientes)}</td></tr>
+              <tr><td>Validación</td><td className="num">{mil(f.pacientes)}</td><td className="num">{mil(f.cortes)}</td><td className="num">{pc(f.pcr, f.pacientes)}</td></tr>
+            </tbody>
+          </table>
+          <p className="part-peso">pos_weight = {mil(neg)} / {mil(ent.cortes_pcr)} = <b>{fmt(neg / ent.cortes_pcr, 2)}</b></p>
+          <table className="tabla part-tabla">
+            <thead><tr><th>Cohorte</th><th className="num">Train</th><th className="num">pCR en train</th><th className="num">Test</th></tr></thead>
+            <tbody>
+              {ORDEN_COHORTES.slice().reverse().map((c) => (
+                <tr key={c}><td>{NOMBRE_COHORTE[c]}</td><td className="num">{cohortes[c].train}</td><td className="num">{pc(cohortes[c].pcr_train, 1)}</td><td className="num">{cohortes[c].test}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }
@@ -127,19 +164,38 @@ function VisDiagnostico({ g }) {
   )
 }
 
-function VisRecetas({ g }) {
-  const m = g.memorizacion
+// Cada variante es el mismo corte aumentado con el código del entrenamiento (src/web_aumento.py): a la izquierda la fase
+// EARLY y a la derecha el mapa de realce EARLY − PRE. Que los dos se muevan igual demuestra que las fases van sincronizadas.
+const AUMENTOS = [
+  { id: 'original', nombre: 'Corte original', detalle: 'Sin aumento. Es lo que ven la evaluación y la web.', uso: 'ref', etiqueta: 'referencia' },
+  { id: 'espejo_horizontal', nombre: 'Espejo horizontal', detalle: 'Probabilidad 0,5. Probado antes en E49.', uso: 'si', etiqueta: 'usado en P02' },
+  { id: 'espejo_vertical', nombre: 'Espejo vertical', detalle: 'Probabilidad 0,5.', uso: 'si', etiqueta: 'usado en P02' },
+  { id: 'giro', nombre: 'Giro', detalle: 'Hasta ±10° (aquí +10°). Probados ±5° (E37) y ±15° (E18, E20).', uso: 'si', etiqueta: 'usado en P02' },
+  { id: 'traslacion', nombre: 'Traslación', detalle: 'Hasta ±3 %, unos ±7,7 px, con relleno cero. Probado ±5 % en E18 y E20.', uso: 'si', etiqueta: 'usado en P02' },
+  { id: 'combinado', nombre: 'Todos a la vez', detalle: 'Así llega un corte a la red en una época de P02.', uso: 'si', etiqueta: 'usado en P02' },
+  { id: 'ganancia', nombre: 'Ganancia de intensidad', detalle: 'Un solo factor 0,9–1,1 para las tres fases (aquí ×1,1). Probada en E25.', uso: 'probado', etiqueta: 'probado, sin mejora' },
+  { id: 'ganancia_por_fase', nombre: 'Cada fase por su cuenta', detalle: 'Ilustración: PRE ×0,8 y EARLY ×1,25 inventan un realce que no existe.', uso: 'no', etiqueta: 'no se usa' },
+]
+
+function VisAumento() {
   return (
-    <div className="vis vis-grafico">
-      <Grafico x={[1, 30]} y={[0, 0.7]} ticksX={[1, 10, 20, 30]} ticksY={[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]} fmtX={(v) => v}
-        etiquetaX="Época" etiquetaY="Pérdida de entrenamiento" descripcion="Prueba de memorización con 40 pacientes: pérdida de E57 frente a P01">
-        <Horizontal y={g.bce_constante} etiqueta="predictor constante" color={COLOR.acento} />
-        {m.e57 && <Linea datos={m.e57.map((h) => [h.epoch, h.train_online_objective])} color={COLOR.azar} />}
-        {m.p01 && <Linea datos={m.p01.map((h) => [h.epoch, h.train_online_objective])} color={COLOR.train} retraso={0.2} />}
-        {m.e57 && <Texto x={16} y={m.e57.at(-1).train_online_objective} dy={22} clase="nota-grafico">E57: 2 pacientes × 10 cortes por lote</Texto>}
-        {m.p01 && <Texto x={16} y={0.12} dy={-10} clase="nota-grafico azul">P01: 10 pacientes × 2 cortes por lote</Texto>}
-      </Grafico>
-      <p className="vis-pie">Prueba de control con 40 pacientes y 30 épocas: con la receta de E57 la pérdida no baja de {fmt(m.e57?.at(-1).train_online_objective ?? 0, 2)}; con lotes de 10 pacientes llega a {fmt(m.p01?.at(-1).train_online_objective ?? 0, 2)}.</p>
+    <div className="vis vis-aumento">
+      <div className="aum-cabeza">
+        <h4>Aumento de datos, sobre el mismo corte</h4>
+        <p>La misma transformación en PRE, EARLY y LATE: se ve EARLY y el realce EARLY − PRE. Solo en entrenamiento; la evaluación y la web no aumentan nada.</p>
+      </div>
+      <ol className="aum-rejilla">
+        {AUMENTOS.map((a, i) => (
+          <motion.li key={a.id} className={`aum-tarjeta ${a.uso}`} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 * i, duration: 0.5, ease: EXPO }}>
+            <div className="aum-imagenes">
+              <img src={`/aumento/${a.id}_early.png`} alt={`${a.nombre}: fase EARLY`} width="256" height="256" loading="lazy" />
+              <img src={`/aumento/${a.id}_realce.png`} alt={`${a.nombre}: realce EARLY menos PRE`} width="256" height="256" loading="lazy" />
+            </div>
+            <p className="aum-nombre"><strong>{a.nombre}</strong><span className={`aum-etiqueta ${a.uso}`}>{a.etiqueta}</span></p>
+            <p className="aum-detalle">{a.detalle}</p>
+          </motion.li>
+        ))}
+      </ol>
     </div>
   )
 }
@@ -187,15 +243,47 @@ function VisEntrega({ r }) {
   )
 }
 
-function VisWeb() {
+// Lectura de cada experimento, con sus cifras del historial (src/web_resultados.py).
+const LECTURAS = {
+  C17_normal: (e) => `Pico en la época ${e.mejor_epoca}; el entrenamiento supera a la validación en ${fmt(e.brecha, 2)}.`,
+  C22_groupnorm_normal: (e) => `Sin BatchNorm el pico baja a ${fmt(e.pico, 3)}: no mejora.`,
+  C23_un_corte_paciente_normal_fold2: (e) => `Pico ${fmt(e.pico, 3)} en la época ${e.mejor_epoca}, pero termina en ${fmt(e.final, 3)}.`,
+  E57_patient_feature_mean_mac: (e, t) => `El pico más alto con solo imagen, elegido mirando esas mismas pacientes: prometía más de lo que dio el test (${fmt(t, 3)}).`,
+  N01_e57_bce_weighted_fold_0_seed_42: (e) => `La mayor caída de todas: de ${fmt(e.pico, 3)} a ${fmt(e.final, 3)}, por debajo del azar.`,
+  bag_fixed_fold1: () => 'Al no elegir el pico, el resultado es honesto: pico y final coinciden.',
+  B08_solo_edad_menopausia: (e) => `Dos datos clínicos solos dan ${fmt(e.pico, 3)}: azar.`,
+  D08_clinica_sola: (e) => `Sin imágenes, la clínica llega a ${fmt(e.pico, 3)}, por encima de cualquier CNN de solo imagen.`,
+  D17_ganancia_compartida: (e) => `El pico más alto del historial (${fmt(e.pico, 3)}), pero termina en ${fmt(e.final, 3)}.`,
+  D36_normal_40: (e) => `${fmt(e.fit, 3)} en entrenamiento frente a ${fmt(e.final, 3)} en validación: memoriza.`,
+}
+
+function VisExperimentos({ r }) {
+  const filas = r.experimentos
+  const solo = filas.filter((e) => !e.clinica)
+  const mejor = Math.max(...solo.map((e) => e.pico)), peor = Math.max(...filas.map((e) => e.caida ?? 0))
+  const celda = (v, clase) => <span className={`exp-num ${clase ?? ''}`}>{v == null ? '—' : fmt(v, 3)}</span>
   return (
-    <div className="vis vis-web">
-      <div className="vis-iguales">
-        <div><span>Pipeline de evaluación</span><b>0,336232</b></div>
-        <span className="vis-igual" aria-hidden="true">=</span>
-        <div><span>Web</span><b>0,336232</b></div>
+    <div className="vis vis-experimentos">
+      <div className="exp-cabecera" aria-hidden="true">
+        <span>Experimento</span><span>Pico</span><span>Final</span><span>Caída</span><span>FIT</span>
       </div>
-      <p className="vis-pie">Corte ISPY1_1001_z016: la misma probabilidad en los dos caminos, porque el servidor usa el mismo preprocesado y el mismo modelo en modo evaluación.</p>
+      <ol className="exp-lista">
+        {filas.map((e, i) => (
+          <motion.li key={e.id} className="exp-fila" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i, duration: 0.45, ease: EXPO }}>
+            <div className="exp-nombre">
+              <strong>{e.nombre}</strong>
+              <span className={e.clinica ? 'exp-etiqueta clinica' : 'exp-etiqueta'}>{e.clinica ? 'con clínica' : 'solo imagen'}</span>
+              <p>{e.cambia} {LECTURAS[e.id]?.(e, r.test_e57.auc)}</p>
+            </div>
+            {celda(e.pico, !e.clinica && e.pico === mejor ? 'mejor' : '')}
+            {celda(e.final)}
+            {celda(e.caida, e.caida === peor ? 'peor' : '')}
+            {celda(e.fit, e.fit >= 0.9 ? 'memoriza' : '')}
+          </motion.li>
+        ))}
+      </ol>
+      <p className="vis-pie">Fold 0 salvo indicación. Pico: mejor época de la validación (optimista). Caída: pico menos final. FIT: AUC de entrenamiento al terminar, cuando se registró.
+        <span className="exp-leyenda"><i className="mejor" /> mejor pico con solo imagen <i className="peor" /> mayor caída <i className="memoriza" /> memoriza</span></p>
     </div>
   )
 }
@@ -210,7 +298,7 @@ const PASOS = [
   { id: 'preprocesado', fase: 'Datos', titulo: 'Preprocesado', Vis: VisCanales, texto: [
     'Cada fase es un PNG de 256 × 256 en escala de grises que se divide entre 255. Nada más: sin normalización de ImageNet ni aumentos de color.',
     'El mismo código se usa en entrenamiento, evaluación y web. Es el error más común que se busca en la defensa.'] },
-  { id: 'particiones', fase: 'Datos', titulo: 'Particiones por paciente', Vis: VisParticiones, texto: [
+  { id: 'particiones', fase: 'Datos', titulo: 'Particiones por paciente', Vis: VisParticiones, completa: true, texto: [
     'La unidad estadística es la paciente: sus cortes están correlacionados y nunca se reparten entre grupos.',
     'Se usan los 5 folds del profesor. Dentro de cada uno, el 80 % entrena (FIT) y el 20 % (validación interna, semilla 42) elige la época y el umbral.',
     'El test público no participa en ninguna decisión y se evalúa una sola vez.'] },
@@ -223,18 +311,18 @@ const PASOS = [
   { id: 'diagnostico', fase: 'Diagnóstico y mejora', titulo: 'Diagnóstico: la red no aprendía', Vis: VisDiagnostico, texto: [
     'Tras más de cien experimentos, el mejor modelo (E57) apenas bajaba de la pérdida de un predictor constante.',
     'La causa estaba en la receta, no en la arquitectura: con lotes de 2 pacientes, las estadísticas de BatchNorm se calculan casi dentro de cada paciente y borran las diferencias entre ellas.'] },
-  { id: 'recetas', fase: 'Diagnóstico y mejora', titulo: 'P01 y P02: una receta que aprende', Vis: VisRecetas, texto: [
-    'P01 forma cada lote con 10 pacientes y 2 cortes aleatorios de cada una: la red pasa a aprender.',
-    'P02 añade aumento geométrico sincronizado en las tres fases (volteos, rotación de 10°, traslación del 3 %) para memorizar menos.'] },
+  { id: 'recetas', fase: 'Diagnóstico y mejora', titulo: 'P01 y P02: lotes y aumento de datos', Vis: VisAumento, completa: true, textoAncho: true, texto: [
+    'P01 forma cada lote con 10 pacientes y 2 cortes de cada una: la red ya puede reducir su error de entrenamiento, algo que con la receta de E57 no lograba ni con 40 pacientes.',
+    'P02 añade aumentos geométricos sincronizados para memorizar menos: la misma transformación en las tres fases, para que el realce no se falsee. Frenó la memorización, pero no mejoró el AUC con pacientes nuevas.'] },
   { id: 'validacion', fase: 'Evaluación y entrega', titulo: 'Validación cruzada en GPU', Vis: VisValidacion, texto: [
     'P02 se entrenó en los 5 folds con cada pérdida, en la GPU de la universidad: 10 entrenamientos.',
     'Con pacientes no vistas, BCE normal da AUC 0,532 y ponderada 0,500. La red aprende, pero lo aprendido se traslada poco.'] },
   { id: 'entrega', fase: 'Evaluación y entrega', titulo: 'Reglas fijadas antes y un único test', Vis: VisEntrega, texto: [
     'Las reglas de elección se registraron antes de ver la validación cruzada. P02 no llega al listón de 0,55, así que se entrega E57.',
     'E57 tiene su única evaluación en test: AUC 0,573. Un resultado modesto, medido sin tocar el test para elegir nada.'] },
-  { id: 'web', fase: 'Evaluación y entrega', titulo: 'La aplicación', Vis: VisWeb, texto: [
-    'Servidor en Flask con el modelo en modo evaluación e interfaz en React. Valida cada imagen y responde con probabilidad, clase, umbral, versión, dispositivo y tiempo.',
-    'La sección Pruebas acepta varios cortes a la vez para la defensa.'] },
+  { id: 'experimentos', fase: 'Evaluación y entrega', titulo: 'Diez experimentos del camino', Vis: VisExperimentos, ancha: true, texto: [
+    'De los casi 200 experimentos del historial, diez que enseñan algo distinto: la referencia inicial, cambios de normalización y de muestreo, la pérdida ponderada, controles con datos clínicos y un entrenamiento que memoriza.',
+    'Todos los picos están medidos sobre la propia validación, así que son optimistas. Los que usan datos clínicos no son comparables con los de solo imagen: el modelo entregado no los usa.'] },
 ]
 
 const FASES = ['Datos', 'Modelo', 'Diagnóstico y mejora', 'Evaluación y entrega']
@@ -263,60 +351,175 @@ function Pipeline({ onIr }) {
   )
 }
 
-// Recorrido: los textos pasan con el scroll normal y la gráfica de la derecha queda fija y cambia
-// con el paso que cruza el centro de la pantalla. Cada paso mide poco más de media pantalla.
-function Recorrido({ g, r, control }) {
+// Recorrido en zigzag: cada paso es una fila con el texto a un lado y su resultado al otro, y el lado se
+// invierte de un paso al siguiente. Cada mitad entra desde su lado al llegar a pantalla, y el visual solo se
+// monta entonces, así sus animaciones (barras, líneas, contadores) empiezan cuando se ven.
+function Visual({ Vis, g, r }) {
+  const ref = useRef(null)
+  const visto = useInView(ref, { once: true, margin: '0px 0px -15% 0px' })
+  const listo = g.estado === 'listo' && r.estado === 'listo'
+  return <div ref={ref} className="zz-visual-interior">{visto && listo ? <Vis g={g} r={r} /> : <span className="zz-hueco" />}</div>
+}
+
+// Una fila del zigzag. Con el scroll, el número grande y la tarjeta se mueven a distinta velocidad (paralaje).
+function Fila({ i, p, g, r, reducir, refFila }) {
+  const lado = i % 2 === 0 ? -1 : 1   // -1: el texto entra por la izquierda; 1: por la derecha
+  const fila = useRef(null)
+  const { scrollYProgress } = useScroll({ target: fila, offset: ['start end', 'end start'] })
+  const yNum = useTransform(scrollYProgress, [0, 1], reducir ? [0, 0] : [70, -70])
+  const yVis = useTransform(scrollYProgress, [0, 1], reducir ? [0, 0] : [26, -26])
+  const entrada = (x, retraso = 0) => ({
+    initial: { opacity: 0, x: reducir ? 0 : x }, whileInView: { opacity: 1, x: 0 }, viewport: { once: true, margin: '0px 0px -12% 0px' },
+    transition: { duration: 0.9, delay: retraso, ease: EXPO },
+  })
+  return (
+    <article ref={(el) => { fila.current = el; refFila(el) }} className={`${i % 2 ? 'zz-fila invertida' : 'zz-fila'}${p.ancha ? ' ancha' : ''}${p.completa ? ' completa' : ''}${p.textoAncho ? ' texto-ancho' : ''}`} data-paso={i}>
+      <motion.div className="zz-texto" {...entrada(lado * 70)}>
+        <motion.span className="zz-num" aria-hidden="true" style={{ y: yNum }}>{String(i + 1).padStart(2, '0')}</motion.span>
+        <p className="zz-fase">{p.fase}</p>
+        <h3>{p.titulo}</h3>
+        {p.texto.map((x) => <p key={x}>{x}</p>)}
+      </motion.div>
+      <motion.div className="zz-visual-marco" {...entrada(-lado * 70, 0.12)}>
+        <motion.div className="zz-visual" style={{ y: yVis }}>
+          <Visual Vis={p.Vis} g={g} r={r} />
+        </motion.div>
+      </motion.div>
+    </article>
+  )
+}
+
+// Riel de progreso fijo a la izquierda mientras se recorre la sección: una línea que se rellena con el scroll,
+// un nodo por paso (pulsable) y el paso actual encendido. Discreto: solo puntos y una cifra.
+function Riel({ progreso, activo, onIr, visible, reducir }) {
+  return (
+    <motion.nav className="riel" aria-label="Pasos del trabajo" initial={false}
+      animate={{ opacity: visible ? 1 : 0, x: visible || reducir ? 0 : -16 }} transition={{ duration: 0.4, ease: EXPO }}
+      style={{ pointerEvents: visible ? 'auto' : 'none' }}>
+      <span className="riel-cifra">{String(activo + 1).padStart(2, '0')}<small>/{PASOS.length}</small></span>
+      <div className="riel-pista">
+        <span className="riel-linea" />
+        <motion.span className="riel-relleno" style={{ scaleY: progreso }} />
+        {PASOS.map((p, i) => (
+          <button key={p.id} className={i === activo ? 'riel-nodo activo' : i < activo ? 'riel-nodo pasado' : 'riel-nodo'}
+            style={{ top: `${(i / (PASOS.length - 1)) * 100}%` }} onClick={() => onIr(i)} aria-label={`Paso ${i + 1}: ${p.titulo}`} aria-current={i === activo ? 'step' : undefined}>
+            <span className="riel-etiqueta">{p.titulo}</span>
+          </button>
+        ))}
+      </div>
+    </motion.nav>
+  )
+}
+
+function useAnchoGrande() {
+  const consulta = '(min-width: 901px)'
+  const [grande, setGrande] = useState(() => window.matchMedia(consulta).matches)
+  useEffect(() => {
+    const m = window.matchMedia(consulta)
+    const f = () => setGrande(m.matches)
+    m.addEventListener('change', f)
+    return () => m.removeEventListener('change', f)
+  }, [])
+  return grande
+}
+
+// Encoge la escena fijada para que quepa en la altura de la ventana (un portátil con Chrome al 100 % deja unos 780 px).
+// Se usa transform: scale en lugar de zoom a propósito: no cambia el ancho ni la maquetación del contenido, así que el alto
+// natural que se mide (offsetHeight) no depende de la escala y no puede oscilar entre dos valores.
+const ALTO_RESERVADO = 116   // barra superior flotante y respiro
+const ESCALA_MINIMA = 0.6
+function useAjusteAlto() {
+  const caja = useRef(null)
+  const [escala, setEscala] = useState(1)
+  useEffect(() => {
+    const el = caja.current
+    if (!el) return
+    let actual = 1
+    const medir = () => {
+      const z = Math.max(ESCALA_MINIMA, Math.min(1, (window.innerHeight - ALTO_RESERVADO) / el.offsetHeight))
+      if (Math.abs(z - actual) > 0.01) { actual = z; setEscala(z) }
+    }
+    const ro = new ResizeObserver(medir)
+    ro.observe(el)
+    window.addEventListener('resize', medir)
+    medir()
+    return () => { ro.disconnect(); window.removeEventListener('resize', medir) }
+  }, [])
+  return { caja, escala }
+}
+
+const VH_PASO = 80  // alto de scroll por paso, en vh
+
+// Recorrido fijado: la escena se queda quieta mientras se baja y, paso a paso, texto y visual cambian de lado
+// (zigzag). El scroll es lo que avanza la historia; el número grande se mueve con el avance dentro de cada paso.
+function Escenario({ g, r, control }) {
+  const contenedor = useRef(null)
+  const reducir = useReducedMotion()
   const [activo, setActivo] = useState(0)
-  const seccion = useRef(null)
+  const [dentro, setDentro] = useState(false)
+  const N = PASOS.length
+  const { scrollYProgress } = useScroll({ target: contenedor, offset: ['start start', 'end end'] })
+  const progreso = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 })
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    setActivo(Math.min(N - 1, Math.max(0, Math.floor(v * N))))
+    setDentro(v > 0.001 && v < 0.999)
+  })
+  const local = useTransform(scrollYProgress, (v) => (v >= 1 ? 1 : (v * N) % 1))
+  const yNum = useTransform(local, [0, 1], reducir ? [0, 0] : [60, -60])
+  control.current = (i) => {
+    const el = contenedor.current
+    const total = el.offsetHeight - window.innerHeight
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY + ((i + 0.5) / N) * total, behavior: reducir ? 'auto' : 'smooth' })
+  }
+  const { caja, escala } = useAjusteAlto()
+  const p = PASOS[activo]
+  const lado = activo % 2 === 0 ? -1 : 1
+  const variantes = (x) => ({
+    entra: { opacity: 0, x: reducir ? 0 : x, filter: reducir ? 'none' : 'blur(6px)' },
+    en: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { duration: 0.55, ease: EXPO } },
+    sale: { opacity: 0, x: reducir ? 0 : -x / 2, filter: reducir ? 'none' : 'blur(4px)', transition: { duration: 0.28 } },
+  })
+  return (
+    <div className="pin" ref={contenedor} style={{ height: `${N * VH_PASO}vh` }}>
+      <Riel progreso={progreso} activo={activo} visible={dentro} onIr={(i) => control.current(i)} reducir={reducir} />
+      <div className="pin-escena">
+        <div className="pin-ajuste" ref={caja} style={{ transform: escala < 1 ? `scale(${escala})` : undefined }}>
+        <AnimatePresence mode="wait">
+          <motion.article key={activo} className={`${activo % 2 ? 'zz-fila invertida pin-fila' : 'zz-fila pin-fila'}${p.ancha ? ' ancha' : ''}${p.completa ? ' completa' : ''}${p.textoAncho ? ' texto-ancho' : ''}`} initial="entra" animate="en" exit="sale">
+            <motion.div className="zz-texto" variants={variantes(lado * 90)}>
+              <motion.span className="zz-num" aria-hidden="true" style={{ y: yNum }}>{String(activo + 1).padStart(2, '0')}</motion.span>
+              <p className="zz-fase">{p.fase}</p>
+              <h3>{p.titulo}</h3>
+              {p.texto.map((x) => <p key={x}>{x}</p>)}
+            </motion.div>
+            <motion.div className="zz-visual-marco" variants={variantes(-lado * 90)}>
+              <div className="zz-visual"><Visual Vis={p.Vis} g={g} r={r} /></div>
+            </motion.div>
+          </motion.article>
+        </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// En pantallas pequeñas no se fija nada: los pasos se apilan, uno tras otro, con el texto sobre el visual.
+function Apilado({ g, r, control }) {
   const pasos = useRef([])
   const reducir = useReducedMotion()
-  const { scrollYProgress } = useScroll({ target: seccion, offset: ['start center', 'end center'] })
-  const progreso = useSpring(scrollYProgress, { stiffness: 120, damping: 30 })
-  useEffect(() => {
-    const obs = new IntersectionObserver((entradas) => {
-      entradas.forEach((e) => { if (e.isIntersecting) setActivo(Number(e.target.dataset.paso)) })
-    }, { rootMargin: '-48% 0px -48% 0px' })
-    pasos.current.forEach((el) => el && obs.observe(el))
-    return () => obs.disconnect()
-  }, [])
   control.current = (i) => pasos.current[i]?.scrollIntoView({ behavior: reducir ? 'auto' : 'smooth', block: 'center' })
-  const listo = g.estado === 'listo' && r.estado === 'listo'
-  const Vis = PASOS[activo].Vis
+  return PASOS.map((p, i) => <Fila key={p.id} i={i} p={p} g={g} r={r} reducir={reducir} refFila={(el) => { pasos.current[i] = el }} />)
+}
+
+function Recorrido({ g, r, control }) {
+  const grande = useAnchoGrande()
   return (
-    <section className="recorrido" ref={seccion} aria-labelledby="t-recorrido">
-      <div className="recorrido-cabeza">
+    <section className="zigzag" aria-labelledby="t-recorrido">
+      <div className="zigzag-cabeza">
         <h2 id="t-recorrido" className="titulo-seccion claro">El trabajo, paso a paso</h2>
-        <p>Diez pasos, de los datos a la aplicación. Al bajar, a la derecha aparece lo que produjo cada paso.</p>
+        <p>Diez pasos, de los datos a la aplicación. Sigue bajando: la escena se queda quieta y cambia con cada paso.</p>
       </div>
-      <div className="recorrido-rejilla">
-        <div className="recorrido-pasos">
-          {PASOS.map((p, i) => (
-            <article key={p.id} data-paso={i} ref={(el) => { pasos.current[i] = el }} className={i === activo ? 'paso activo' : 'paso'}>
-              <div className="paso-tarjeta">
-                <p className="paso-fase">{i + 1} de {PASOS.length} · {p.fase}</p>
-                <h3>{p.titulo}</h3>
-                {p.texto.map((x) => <p key={x}>{x}</p>)}
-                <div className="paso-visual-movil">{listo && <p.Vis g={g} r={r} />}</div>
-              </div>
-            </article>
-          ))}
-        </div>
-        <div className="recorrido-escena">
-          <div className="escena-fija">
-            <div className="escena-progreso" aria-hidden="true"><motion.span style={{ scaleX: progreso }} /></div>
-            <p className="escena-paso">Paso {activo + 1} de {PASOS.length} · {PASOS[activo].titulo}</p>
-            <div className="escena-marco">
-              <AnimatePresence mode="wait">
-                <motion.div key={activo} className="escena-contenido"
-                  initial={{ opacity: 0, y: reducir ? 0 : 24, filter: 'blur(6px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, y: reducir ? 0 : -16, filter: 'blur(4px)' }} transition={{ duration: 0.45, ease: EXPO }}>
-                  {listo ? <Vis g={g} r={r} /> : <p className="vis-pie">Cargando…</p>}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
+      {grande ? <Escenario g={g} r={r} control={control} /> : <Apilado g={g} r={r} control={control} />}
     </section>
   )
 }

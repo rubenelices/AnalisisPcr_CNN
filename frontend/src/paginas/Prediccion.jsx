@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { animate, motion, useReducedMotion } from 'framer-motion'
 import { PREVALENCIA_TRAIN } from '../ejemplo.js'
+import { archivosDeEjemplo } from '../api.js'
+import { MapaOclusion } from '../componentes/MapaOclusion.jsx'
 import { fmtProb, useGraficas, useResumen } from '../datos.js'
 
 // Números con coma decimal, como en el resto del trabajo.
 export const fmt = (v, d = 2) => v.toFixed(d).replace('.', ',')
 
-function Visor({ datos }) {
+function Visor({ datos, children }) {
   const reducir = useReducedMotion()
   // Las fases aparecen en el orden en que se adquieren: es la única entrada escalonada.
   const aparicion = (k) => ({
@@ -54,6 +56,7 @@ function Visor({ datos }) {
           <p className="realce-nota">Es una ayuda para mirar la imagen, no una explicación de la predicción.</p>
         </figcaption>
       </motion.figure>
+      {children}
     </section>
   )
 }
@@ -258,11 +261,20 @@ export function Prediccion({ entrada, ejemplo, errores, resultado, modelo }) {
     : { clave: entrada.nombre, titulo: `Corte ${entrada.nombre}`,
         subtitulo: 'Fases subidas desde tu ordenador; no se guardan',
         fases: entrada.fases, realce: entrada.realce }
+  const archivosSubidos = ejemplo ? null : entrada.archivos
+  // Los ejemplos se piden de nuevo como ficheros; las subidas reutilizan los que validó Pruebas.
+  const obtenerArchivos = useCallback(
+    () => (ejemplo ? archivosDeEjemplo(ejemplo) : Promise.resolve(archivosSubidos)),
+    [ejemplo, archivosSubidos],
+  )
+  const conMapa = Boolean(ejemplo || archivosSubidos)
   return (
     <div className="pagina-prediccion" data-campo="inicio">
       <div className="sala-columna">
         {errores.length > 0 && <Errores errores={errores} />}
-        <Visor key={datos.clave} datos={datos} />
+        <Visor key={datos.clave} datos={datos}>
+          {conMapa && <MapaOclusion clave={datos.clave} obtenerArchivos={obtenerArchivos} fondo={datos.fases[1].src} />}
+        </Visor>
       </div>
       <Informe key={`i-${datos.clave}-${resultado.estado}`} resultado={resultado} modelo={modelo} subida={!ejemplo} />
     </div>

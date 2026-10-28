@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-23",
+  "actualizado": "2026-10-28",
   "test_e57": {
     "auc": 0.5727872373063353,
     "ic95": [
@@ -19,7 +19,13 @@
     },
     "pacientes": 176,
     "pcr": 53,
-    "umbral": 0.325
+    "umbral": 0.325,
+    "precision_macro": 0.5458781937972039,
+    "recall_macro": 0.5437950605921154,
+    "f1_macro": 0.544470588235294,
+    "recall_pcr": 0.33962264150943394,
+    "f1_pcr": 0.3529411764705882,
+    "precision_pcr": 0.3673469387755102
   },
   "picos_e57": {
     "fold0": 0.6702620967741935,
@@ -96,6 +102,19 @@
         "sensibilidad": 0.37267080745341613,
         "especificidad": 0.6812903225806451,
         "balanced_accuracy": 0.5269805650170306
+      },
+      "matriz_conjunta": {
+        "tn": 528,
+        "fp": 247,
+        "fn": 202,
+        "tp": 120,
+        "pacientes": 1097,
+        "pcr": 322,
+        "sensibilidad": 0.37267080745341613,
+        "especificidad": 0.6812903225806451,
+        "balanced_accuracy": 0.5269805650170306,
+        "precision": 0.32697547683923706,
+        "folds": 5
       }
     },
     "weighted": {
@@ -177,6 +196,278 @@
         -0.0007849865059662397,
         0.06384011783838267
       ]
+    }
+  },
+  "experimentos": [
+    {
+      "id": "C17_normal",
+      "nombre": "Referencia inicial",
+      "cambia": "CNN propia con BCE normal, fold 0.",
+      "clinica": false,
+      "fold": "0",
+      "epocas": 9.0,
+      "mejor_epoca": 1.0,
+      "pico": 0.5972,
+      "final": 0.5362,
+      "fit": 0.6393,
+      "brecha": 0.10309999999999997,
+      "caida": 0.06099999999999994
+    },
+    {
+      "id": "C22_groupnorm_normal",
+      "nombre": "GroupNorm",
+      "cambia": "Sustituye BatchNorm por GroupNorm.",
+      "clinica": false,
+      "fold": "0",
+      "epocas": 6.0,
+      "mejor_epoca": 5.0,
+      "pico": 0.5242,
+      "final": 0.5239,
+      "fit": 0.5577,
+      "brecha": 0.03379999999999994,
+      "caida": 0.00029999999999996696
+    },
+    {
+      "id": "C23_un_corte_paciente_normal_fold2",
+      "nombre": "Un corte por paciente",
+      "cambia": "Cada paciente aporta un solo corte, fold 2.",
+      "clinica": false,
+      "fold": "2",
+      "epocas": 33.0,
+      "mejor_epoca": 23.0,
+      "pico": 0.6534,
+      "final": 0.5763,
+      "fit": 0.5894,
+      "brecha": 0.0131,
+      "caida": 0.07709999999999995
+    },
+    {
+      "id": "E57_patient_feature_mean_mac",
+      "nombre": "E57 (modelo entregado)",
+      "cambia": "Media de rasgos por paciente, fold 0.",
+      "clinica": false,
+      "fold": "0",
+      "epocas": 24.0,
+      "mejor_epoca": 14.0,
+      "pico": 0.6703,
+      "final": 0.557,
+      "fit": null,
+      "brecha": null,
+      "caida": 0.11329999999999996
+    },
+    {
+      "id": "N01_e57_bce_weighted_fold_0_seed_42",
+      "nombre": "E57 con BCE ponderada",
+      "cambia": "Misma red con pos_weight = N0/N1.",
+      "clinica": false,
+      "fold": "0",
+      "epocas": 21.0,
+      "mejor_epoca": 11.0,
+      "pico": 0.6497,
+      "final": 0.4798,
+      "fit": 0.5575,
+      "brecha": 0.07769999999999999,
+      "caida": 0.16990000000000005
+    },
+    {
+      "id": "bag_fixed_fold1",
+      "nombre": "Época fija",
+      "cambia": "Pérdida por paciente y 10 épocas, sin elegir el pico.",
+      "clinica": false,
+      "fold": "1",
+      "epocas": 10.0,
+      "mejor_epoca": 10.0,
+      "pico": 0.5631,
+      "final": 0.5631,
+      "fit": null,
+      "brecha": null,
+      "caida": 0.0
+    },
+    {
+      "id": "B08_solo_edad_menopausia",
+      "nombre": "Solo edad y menopausia",
+      "cambia": "Sin imágenes: control con dos datos clínicos.",
+      "clinica": true,
+      "fold": "0",
+      "epocas": 12.0,
+      "mejor_epoca": 2.0,
+      "pico": 0.5287,
+      "final": 0.5027,
+      "fit": null,
+      "brecha": null,
+      "caida": 0.025999999999999912
+    },
+    {
+      "id": "D08_clinica_sola",
+      "nombre": "Solo datos clínicos",
+      "cambia": "Sin imágenes: control con la clínica basal.",
+      "clinica": true,
+      "fold": "0",
+      "epocas": 12.0,
+      "mejor_epoca": 2.0,
+      "pico": 0.7115,
+      "final": 0.6945,
+      "fit": null,
+      "brecha": null,
+      "caida": 0.017000000000000015
+    },
+    {
+      "id": "D17_ganancia_compartida",
+      "nombre": "Imagen + clínica",
+      "cambia": "La CNN recibe además datos clínicos.",
+      "clinica": true,
+      "fold": "0",
+      "epocas": 12.0,
+      "mejor_epoca": 2.0,
+      "pico": 0.7481,
+      "final": 0.5859,
+      "fit": null,
+      "brecha": null,
+      "caida": 0.1622
+    },
+    {
+      "id": "D36_normal_40",
+      "nombre": "Imagen + clínica, 40 épocas",
+      "cambia": "Entrenamiento largo para forzar la memorización.",
+      "clinica": true,
+      "fold": null,
+      "epocas": 40.0,
+      "mejor_epoca": 3.0,
+      "pico": 0.6093,
+      "final": 0.5425,
+      "fit": 0.9982,
+      "brecha": 0.4557,
+      "caida": 0.06679999999999997
+    }
+  ],
+  "particiones": {
+    "folds": [
+      {
+        "fold": 0,
+        "pacientes": 219,
+        "pcr": 64,
+        "cortes": 2186,
+        "cortes_pcr": 640,
+        "cohortes": {
+          "duke": {
+            "pacientes": 42,
+            "pcr": 11
+          },
+          "spy1": {
+            "pacientes": 21,
+            "pcr": 4
+          },
+          "spy2": {
+            "pacientes": 156,
+            "pcr": 49
+          }
+        }
+      },
+      {
+        "fold": 1,
+        "pacientes": 219,
+        "pcr": 62,
+        "cortes": 2190,
+        "cortes_pcr": 620,
+        "cohortes": {
+          "duke": {
+            "pacientes": 42,
+            "pcr": 9
+          },
+          "spy1": {
+            "pacientes": 21,
+            "pcr": 7
+          },
+          "spy2": {
+            "pacientes": 156,
+            "pcr": 46
+          }
+        }
+      },
+      {
+        "fold": 2,
+        "pacientes": 220,
+        "pcr": 59,
+        "cortes": 2192,
+        "cortes_pcr": 586,
+        "cohortes": {
+          "duke": {
+            "pacientes": 41,
+            "pcr": 7
+          },
+          "spy1": {
+            "pacientes": 21,
+            "pcr": 7
+          },
+          "spy2": {
+            "pacientes": 158,
+            "pcr": 45
+          }
+        }
+      },
+      {
+        "fold": 3,
+        "pacientes": 220,
+        "pcr": 75,
+        "cortes": 2192,
+        "cortes_pcr": 750,
+        "cohortes": {
+          "duke": {
+            "pacientes": 42,
+            "pcr": 9
+          },
+          "spy1": {
+            "pacientes": 21,
+            "pcr": 3
+          },
+          "spy2": {
+            "pacientes": 157,
+            "pcr": 63
+          }
+        }
+      },
+      {
+        "fold": 4,
+        "pacientes": 219,
+        "pcr": 62,
+        "cortes": 2185,
+        "cortes_pcr": 620,
+        "cohortes": {
+          "duke": {
+            "pacientes": 42,
+            "pcr": 8
+          },
+          "spy1": {
+            "pacientes": 20,
+            "pcr": 5
+          },
+          "spy2": {
+            "pacientes": 157,
+            "pcr": 49
+          }
+        }
+      }
+    ],
+    "test": {
+      "pacientes": 176,
+      "cortes": 1758
+    },
+    "cohortes": {
+      "duke": {
+        "train": 209,
+        "pcr_train": 0.21052631578947367,
+        "test": 42
+      },
+      "spy1": {
+        "train": 104,
+        "pcr_train": 0.25,
+        "test": 35
+      },
+      "spy2": {
+        "train": 784,
+        "pcr_train": 0.32142857142857145,
+        "test": 99
+      }
     }
   },
   "referencia": {

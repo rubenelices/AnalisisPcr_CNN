@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Barras, COLOR, Figura, Grafico, Horizontal, Linea, Texto } from '../componentes/Graficas.jsx'
+import { Barras, COLOR, Figura, Grafico, Horizontal, Linea, Texto, Vertical } from '../componentes/Graficas.jsx'
 import { Contador, Revelar } from '../componentes/Movimiento.jsx'
-import { fmt, useGraficas, useResumen } from '../datos.js'
+import { fmt, mil, useGraficas, useResumen } from '../datos.js'
 
 const COHORTES = { spy1: 'I-SPY1', spy2: 'I-SPY2', duke: 'Duke' }
 const MIN = 0.35, MAX = 0.9
@@ -63,17 +64,17 @@ function Kpis({ t, g }) {
   const items = [
     { valor: t.auc, d: 3, nombre: 'AUC por paciente', nota: `IC95 ${fmt(t.ic95[0], 3)}–${fmt(t.ic95[1], 3)}` },
     { valor: g.e57.test.corte.auc, d: 3, nombre: 'AUC por corte', nota: `${g.e57.test.corte.n.toLocaleString('es-ES')} cortes sueltos` },
-    { valor: t.sensibilidad, d: 2, nombre: 'Sensibilidad', nota: `${t.matriz.tp} de ${t.pcr} pCR detectadas` },
+    { valor: t.precision_macro, d: 2, nombre: 'Precisión', nota: `solo pCR: ${fmt(t.precision_pcr, 2)}`, macro: true },
+    { valor: t.recall_macro, d: 2, nombre: 'Recall', nota: `solo pCR: ${fmt(t.recall_pcr, 2)} (${t.matriz.tp} de ${t.pcr})`, macro: true },
+    { valor: t.f1_macro, d: 2, nombre: 'F1', nota: `solo pCR: ${fmt(t.f1_pcr, 2)}`, macro: true },
     { valor: t.especificidad, d: 2, nombre: 'Especificidad', nota: `${t.matriz.tn} de ${t.matriz.tn + t.matriz.fp} sin pCR` },
-    { valor: t.precision, d: 2, nombre: 'Precisión', nota: 'cuando dice pCR' },
-    { valor: t.balanced_accuracy, d: 2, nombre: 'Exactitud equilibrada', nota: `umbral ${fmt(t.umbral, 3)}` },
   ]
   return (
     <div className="kpis">
       {items.map((k, i) => (
         <Revelar key={k.nombre} className="kpi" orden={i}>
           <p className="kpi-valor"><Contador valor={k.valor} decimales={k.d} /></p>
-          <p className="kpi-nombre">{k.nombre}</p>
+          <p className="kpi-nombre">{k.nombre}{k.macro && <span className="kpi-macro"> · macro</span>}</p>
           <p className="kpi-nota">{k.nota}</p>
         </Revelar>
       ))}
@@ -81,11 +82,81 @@ function Kpis({ t, g }) {
   )
 }
 
+const PERDIDAS = { normal: 'normal', weighted: 'ponderada' }
+
+// Botones «Todos · Fold 0 … Fold 4». Elegir un fold aísla sus curvas en las gráficas por época.
+function SelectorFold({ folds, valor, onCambio }) {
+  const opciones = [['todos', 'Los 5 folds'], ...folds.map((f) => [f, `Fold ${f}`])]
+  return (
+    <div className="selector-fold" role="group" aria-label="Fold que se muestra en las curvas">
+      {opciones.map(([v, t]) => (
+        <button key={v} type="button" aria-pressed={valor === v} className={valor === v ? 'activo' : ''} onClick={() => onCambio(v)}>{t}</button>
+      ))}
+    </div>
+  )
+}
+
+function rango(valores, paso = 0.05) {
+  const lo = Math.floor(Math.min(...valores) / paso) * paso, hi = Math.ceil(Math.max(...valores) / paso) * paso
+  const ticks = []
+  for (let v = lo; v <= hi + 1e-9; v += paso) ticks.push(Math.round(v * 100) / 100)
+  return [[lo, hi], ticks]
+}
+
+function CurvasPorEpoca({ k, g, r, fold }) {
+  const todos = fold === 'todos'
+  const series = g.p02[k].filter((f) => todos || f.fold === fold)
+  const resumen = r.cv_p02[k].folds.find((f) => f.fold === fold)
+  const maxEpoca = Math.max(...series.flatMap((f) => f.historia.map((h) => h.epoch)))
+  const ticksX = [1, 5, 10, 15, 20, 25, 30].filter((t) => t <= Math.max(maxEpoca, 5))
+  const xs = [1, todos ? 30 : Math.max(maxEpoca, 5)]
+  const bces = series.flatMap((f) => f.historia.flatMap((h) => [h.fit_bce, h.inner_bce]))
+  const [yBce, ticksBce] = rango(bces, 0.05)
+  const grosor = todos ? 1.6 : 2.4
+  const nombre = PERDIDAS[k]
+  return (
+    <div className="curvas-fold">
+      <Figura titulo={todos ? `AUC por época, 5 folds · BCE ${nombre}` : `AUC por época, fold ${fold} · BCE ${nombre}`}
+        leyenda={[{ texto: 'Entrenamiento (FIT)', color: COLOR.train }, { texto: 'Validación interna', color: COLOR.valid },
+          ...(todos ? [{ texto: 'Buen modelo teórico', color: COLOR.ref, tipo: 'puntos' }] : [{ texto: 'AUC exterior (pacientes no vistas)', color: COLOR.test, tipo: 'discontinua' }])]}
+        explicacion={<p>{todos
+          ? (k === 'normal'
+            ? 'Con lotes de 10 pacientes y aumento sincronizado (P02), la red sí aprende: el AUC de entrenamiento sube con las épocas. El de validación no lo acompaña, y en tres folds la validación eligió la época 1 o 2.'
+            : 'Con la pérdida ponderada pasa lo mismo. En dos folds la validación interna eligió una de las tres primeras épocas, antes de que la red aprendiera casi nada.')
+          : `La validación interna eligió la época ${resumen.epoca} (AUC interna ${fmt(resumen.interna, 3)}). Con ese modelo, las ${r.particiones.folds[fold].pacientes} pacientes del fold exterior dan ${fmt(resumen.exterior, 3)}. Entrenó ${maxEpoca} épocas: la paciencia corta 10 épocas después de la elegida.`}</p>}>
+        <Grafico x={xs} y={[0.4, 0.9]} ticksX={ticksX} ticksY={[0.4, 0.5, 0.6, 0.7, 0.8, 0.9]} fmtX={(v) => v}
+          etiquetaX="Época" etiquetaY="AUC por paciente" descripcion={`AUC por época con BCE ${nombre}, ${todos ? 'los 5 folds' : `fold ${fold}`}`}>
+          {todos && <Horizontal y={0.8} color={COLOR.ref} tipo="puntos" />}
+          <Horizontal y={0.5} />
+          {!todos && <Horizontal y={resumen.exterior} color={COLOR.test} etiqueta={`exterior ${fmt(resumen.exterior, 3)}`} />}
+          {!todos && <Vertical x={resumen.epoca} etiqueta={`época elegida: ${resumen.epoca}`} />}
+          {series.map((f, i) => <Linea key={`t${fold}-${f.fold}`} datos={f.historia.map((h) => [h.epoch, h.fit_auc])} color={COLOR.train} grosor={grosor} puntos={!todos} retraso={i * 0.08} />)}
+          {series.map((f, i) => <Linea key={`v${fold}-${f.fold}`} datos={f.historia.map((h) => [h.epoch, h.inner_auc])} color={COLOR.valid} grosor={grosor} puntos={!todos} retraso={0.3 + i * 0.08} />)}
+        </Grafico>
+      </Figura>
+      <Figura titulo={todos ? `BCE por época, 5 folds · BCE ${nombre}` : `BCE por época, fold ${fold} · BCE ${nombre}`}
+        leyenda={[{ texto: 'Entrenamiento (FIT)', color: COLOR.train }, { texto: 'Validación interna', color: COLOR.valid }]}
+        explicacion={<p>{k === 'normal'
+          ? 'Pérdida BCE sin ponderar en ambas curvas. Si la de entrenamiento baja y la de validación sube, la red se ajusta a sus pacientes sin generalizar.'
+          : 'Las dos curvas usan la BCE sin ponderar para que sean comparables con la normal; el entrenamiento optimizó la ponderada.'}</p>}>
+        <Grafico x={xs} y={yBce} ticksX={ticksX} ticksY={ticksBce} fmtX={(v) => v} fmtY={(v) => fmt(v, 2)}
+          etiquetaX="Época" etiquetaY="BCE" descripcion={`BCE por época con BCE ${nombre}, ${todos ? 'los 5 folds' : `fold ${fold}`}`}>
+          {!todos && <Vertical x={resumen.epoca} etiqueta={`época ${resumen.epoca}`} />}
+          {series.map((f, i) => <Linea key={`tb${fold}-${f.fold}`} datos={f.historia.map((h) => [h.epoch, h.fit_bce])} color={COLOR.train} grosor={grosor} puntos={!todos} retraso={i * 0.08} />)}
+          {series.map((f, i) => <Linea key={`vb${fold}-${f.fold}`} datos={f.historia.map((h) => [h.epoch, h.inner_bce])} color={COLOR.valid} grosor={grosor} puntos={!todos} retraso={0.3 + i * 0.08} />)}
+        </Grafico>
+      </Figura>
+    </div>
+  )
+}
+
 function ValidacionCruzada({ r, g }) {
   const n = r.cv_p02.normal, w = r.cv_p02.weighted, par = r.cv_p02.pareada
+  const [fold, setFold] = useState('todos')
+  const tenue = (c, f) => (fold === 'todos' || fold === f ? c : `${c}40`)
   const datos = []
-  n.folds.forEach((f, i) => datos.push({ x: i + 0.8, y: f.exterior, color: COLOR.train }))
-  w?.folds.forEach((f, i) => datos.push({ x: i + 1.2, y: f.exterior, color: COLOR.valid }))
+  n.folds.forEach((f, i) => datos.push({ x: i + 0.8, y: f.exterior, color: tenue(COLOR.train, f.fold) }))
+  w?.folds.forEach((f, i) => datos.push({ x: i + 1.2, y: f.exterior, color: tenue(COLOR.valid, f.fold) }))
   return (
     <>
       <div className="dos-columnas">
@@ -110,40 +181,74 @@ function ValidacionCruzada({ r, g }) {
               demostrada.
             </p>
           ) : <p>La comparación aparecerá al completar los 5 folds de la BCE ponderada.</p>}
-          <table className="tabla compacta">
+          <table className="tabla compacta tabla-folds">
             <thead><tr><th>Fold</th><th className="num">Época</th><th className="num">Interna</th><th className="num">Exterior</th>{w && <th className="num">Ponderada</th>}</tr></thead>
             <tbody>
               {n.folds.map((f, i) => (
-                <tr key={f.fold}><td>{f.fold}</td><td className="num">{f.epoca}</td><td className="num">{fmt(f.interna, 3)}</td>
+                <tr key={f.fold} className={fold === f.fold ? 'activa' : ''} onClick={() => setFold(fold === f.fold ? 'todos' : f.fold)} title={`Ver las curvas del fold ${f.fold}`}>
+                  <td>{f.fold}</td><td className="num">{f.epoca}</td><td className="num">{fmt(f.interna, 3)}</td>
                   <td className="num">{fmt(f.exterior, 3)}</td>{w && <td className="num">{fmt(w.folds[i].exterior, 3)}</td>}</tr>
               ))}
               <tr className="total"><td>Conjunta</td><td /><td className="num">{fmt(n.interna_media, 3)}</td><td className="num">{fmt(n.auc, 3)}</td>{w && <td className="num">{fmt(w.auc, 3)}</td>}</tr>
             </tbody>
           </table>
-          <p className="nota-pie">Interna: AUC de la validación interna en la época elegida (optimista). Exterior: pacientes no vistas.</p>
+          <p className="nota-pie">Interna: AUC de la validación interna en la época elegida (optimista). Exterior: pacientes no vistas. Pulsa una fila para ver sus curvas.</p>
         </div>
       </div>
 
       {g.p02.normal && (
-        <div className="dos-columnas">
-          {['normal', 'weighted'].filter((k) => g.p02[k]).map((k) => (
-            <Figura key={k} titulo={`AUC por época, 5 folds · BCE ${k === 'normal' ? 'normal' : 'ponderada'}`}
-              leyenda={[{ texto: 'Entrenamiento (FIT)', color: COLOR.train }, { texto: 'Validación interna', color: COLOR.valid }, { texto: 'Buen modelo teórico', color: COLOR.ref, tipo: 'puntos' }]}
-              explicacion={<p>{k === 'normal'
-                ? 'Con lotes de 10 pacientes y aumento sincronizado (P02), la red sí aprende: el AUC de entrenamiento sube con las épocas. El de validación no lo acompaña, y en tres folds la validación eligió la época 1 o 2.'
-                : 'Con la pérdida ponderada pasa lo mismo. En dos folds la validación interna eligió una de las tres primeras épocas, antes de que la red aprendiera casi nada.'}</p>}>
-              <Grafico x={[1, 30]} y={[0.4, 0.9]} ticksX={[1, 5, 10, 15, 20, 25, 30]} ticksY={[0.4, 0.5, 0.6, 0.7, 0.8, 0.9]} fmtX={(v) => v}
-                etiquetaX="Época" etiquetaY="AUC por paciente" descripcion={`AUC por época de los 5 folds con BCE ${k}`}>
-                <Horizontal y={0.8} color={COLOR.ref} tipo="puntos" />
-                <Horizontal y={0.5} />
-                {g.p02[k].map((f, i) => <Linea key={`t${i}`} datos={f.historia.map((h) => [h.epoch, h.fit_auc])} color={COLOR.train} grosor={1.6} retraso={i * 0.08} />)}
-                {g.p02[k].map((f, i) => <Linea key={`v${i}`} datos={f.historia.map((h) => [h.epoch, h.inner_auc])} color={COLOR.valid} grosor={1.6} retraso={0.3 + i * 0.08} />)}
-              </Grafico>
-            </Figura>
-          ))}
-        </div>
+        <>
+          <div className="curvas-cabeza">
+            <h3 className="subtitulo">Curvas por época</h3>
+            <SelectorFold folds={n.folds.map((f) => f.fold)} valor={fold} onCambio={setFold} />
+          </div>
+          <div className="dos-columnas curvas-columnas">
+            {['normal', 'weighted'].filter((k) => g.p02[k] && r.cv_p02[k]).map((k) => <CurvasPorEpoca key={k} k={k} g={g} r={r} fold={fold} />)}
+          </div>
+        </>
       )}
     </>
+  )
+}
+
+function MatrizConjunta({ m, test }) {
+  const celdas = [
+    ['tn', 'Verdadero negativo', 'sin pCR, dicho sin pCR', 'bien'], ['fp', 'Falso positivo', 'sin pCR, dicho pCR', 'mal'],
+    ['fn', 'Falso negativo', 'pCR, dicho sin pCR', 'mal'], ['tp', 'Verdadero positivo', 'pCR, dicho pCR', 'bien'],
+  ]
+  return (
+    <div className="dos-columnas">
+      <Revelar>
+        <div className="matriz" role="img" aria-label={`Matriz de confusión conjunta: ${m.tn} verdaderos negativos, ${m.fp} falsos positivos, ${m.fn} falsos negativos, ${m.tp} verdaderos positivos`}>
+          <span className="matriz-eje matriz-columna">Predicción: sin pCR</span>
+          <span className="matriz-eje matriz-columna">Predicción: pCR</span>
+          {celdas.map(([k, nombre, detalle, tipo], i) => (
+            <div key={k} className={`matriz-celda ${tipo}`} style={{ gridColumn: (i % 2) + 2, gridRow: Math.floor(i / 2) + 2 }}>
+              <strong><Contador valor={m[k]} decimales={0} /></strong>
+              <span>{nombre}</span><small>{detalle}</small>
+            </div>
+          ))}
+          <span className="matriz-eje matriz-fila" style={{ gridRow: 2 }}>Real: sin pCR</span>
+          <span className="matriz-eje matriz-fila" style={{ gridRow: 3 }}>Real: pCR</span>
+        </div>
+      </Revelar>
+      <div className="texto-columna">
+        <p className="parrafo">
+          Son los <strong>5 folds juntos, no un fold</strong>: cada una de las {mil(m.pacientes)} pacientes de entrenamiento aparece
+          una sola vez, predicha por el modelo del fold en que quedó fuera y con el umbral interno de ese fold. Es la
+          evaluación honesta de la receta P02 con BCE normal.
+        </p>
+        <p className="parrafo">
+          Sensibilidad <strong>{fmt(m.sensibilidad, 3)}</strong> ({m.tp} de {m.pcr} pCR detectadas) y especificidad{' '}
+          <strong>{fmt(m.especificidad, 3)}</strong> ({m.tn} de {m.tn + m.fp} sin pCR). Con un AUC cercano al azar, el modelo
+          acierta poco en ambas direcciones.
+        </p>
+        <p className="nota-pie">
+          El test público ({test.pacientes} pacientes) es aparte: pertenece a E57, el modelo entregado, y no interviene en esta
+          matriz.
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -186,6 +291,10 @@ export function Resultados() {
           y la agregación fijados antes. Estas son sus métricas por paciente, junto a cómo se han medido y qué se comparó.
         </p>
         <Kpis t={t} g={g} />
+        <p className="nota-pie">
+          <strong>Macro</strong> es la media de las dos clases (pCR y sin pCR); debajo, la clase pCR sola, que es la minoritaria (30 % en el test) y
+          la que responde a «cuando dice pCR, ¿acierta?». Umbral {fmt(t.umbral, 3)}, fijado en validación.
+        </p>
         <p className="nota-pie">El AUC por corte importa para la demostración: en la defensa se evalúa un corte suelto por paciente, no la media de sus cortes.</p>
       </section>
 
@@ -208,6 +317,13 @@ export function Resultados() {
         </p>
         <ValidacionCruzada r={r} g={g} />
       </section>
+
+      {normal?.matriz_conjunta && (
+        <section className="papel-seccion">
+          <h2 className="titulo-seccion">Matriz de confusión de la validación cruzada (P02 normal)</h2>
+          <MatrizConjunta m={normal.matriz_conjunta} test={t} />
+        </section>
+      )}
 
       {normal && (
         <section className="papel-seccion">
