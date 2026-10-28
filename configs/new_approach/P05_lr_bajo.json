@@ -1,0 +1,22 @@
+{
+  "schema": "new_approach_p05_v1",
+  "description": "P02 + un único cambio: tasa de aprendizaje 0,001 → 0,0001 (solo BCE normal)",
+  "reference_model": "configs/patient_features/E57_patient_feature_mean_mac.json",
+  "splits": "N01 congelado (FIT / interna 20% seed42 / exterior = fold docente)",
+  "batch": {
+    "patients_per_batch": 10,
+    "cuts_per_patient": 2,
+    "passes_per_epoch": 5
+  },
+  "augmentation": {
+    "horizontal_flip_probability": 0.5,
+    "vertical_flip_probability": 0.5,
+    "max_rotation_degrees": 10.0,
+    "max_translation_fraction": 0.03
+  },
+  "epochs": 50,
+  "patience": 10,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.001,
+  "outer_predictions_per_epoch": true
+}

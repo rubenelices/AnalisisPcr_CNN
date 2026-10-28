@@ -73,7 +73,7 @@ def test_paired_comparison_requires_same_patients_and_writes_outputs(tmp_path: P
     _tag_experiment(left, "E02_base_normal")
     _tag_experiment(right, "E03_base_weighted")
 
-    result = compare_experiments(left, right, repetitions=100, seed=11)
+    result = compare_experiments(left, right, repetitions=100, seed=11, require_scientific_runs=False)
     assert result["comparison_design"] == "paired_bootstrap_by_patient"
     assert result["patients"] == 12
     assert result["left_experiment"] == "E02_base_normal"
@@ -87,5 +87,5 @@ def test_paired_comparison_requires_same_patients_and_writes_outputs(tmp_path: P
 
     mismatched = pd.read_csv(right / "predictions_patient.csv")
     mismatched.iloc[:-1].to_csv(right / "predictions_patient.csv", index=False)
-    with pytest.raises(ValueError, match="mismas pacientes"):
-        compare_experiments(left, right, repetitions=10)
+    with pytest.raises(ValueError, match="recuento"):
+        compare_experiments(left, right, repetitions=10, require_scientific_runs=False)

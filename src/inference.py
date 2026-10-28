@@ -14,6 +14,7 @@ from torch import Tensor, nn
 
 from src.architectures import BaseCNNConfig, BreastPCRNet
 from src.data import ImageSource, load_dce_triplet
+from src.occlusion_map import OcclusionMap, occlusion_map
 from src.train import choose_device
 
 
@@ -126,6 +127,12 @@ class DCEInferenceEngine:
             model_sha256=self.model_sha256,
             model_version=self.model_version,
         )
+
+    def occlusion_tensor(self, image: Tensor, patch: int = 16) -> OcclusionMap:
+        """Mapa de oclusión del corte con el mismo modelo y la misma entrada que la predicción."""
+        if image.shape != (3, 256, 256) or image.dtype != torch.float32 or not torch.isfinite(image).all():
+            raise ValueError("Se esperaba un tensor float32 finito de forma (3, 256, 256)")
+        return occlusion_map(self.model, image, self.device, patch=patch)
 
     def predict_sources(self, sources: Mapping[str, ImageSource]) -> InferenceResult:
         return self.predict_tensor(load_dce_triplet(sources))

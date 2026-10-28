@@ -17,6 +17,14 @@ Subcomandos:
 
 P02 = P01 + un único cambio: aumento geométrico sincronizado de las tres fases
 solo en entrenamiento (volteos H/V y giro/traslación pequeños). Evaluación sin aumento.
+
+P05 = P02 + un único cambio: tasa de aprendizaje 0,0001 (nuevo_enfoque/P05_LR_BAJO.md).
+Guarda además las predicciones exteriores de cada época, solo para el análisis
+secundario de época fija; la elección de época y umbral sigue siendo interna.
+Retirado sin ejecutar: la tasa 0,0001 ya se probó (E12, E55).
+
+P07 = P02 con semillas 17 y 123 además de la 42 (--seed), para promediar los 3 modelos
+de cada fold (nuevo_enfoque/P07_SEMILLAS.md). La semilla no cambia las particiones.
 """
 import argparse
 import copy
@@ -50,8 +58,10 @@ from src.train_patient_features import load_spec
 VARIANTS = {
     'p01': ('P01_lotes_pacientes', 'new_approach_p01_v1'),
     'p02': ('P02_aumento_geometrico', 'new_approach_p02_v1'),
+    'p05': ('P05_lr_bajo', 'new_approach_p05_v1'),
 }
 TECH = Path('reports/new_approach/P01_lotes_pacientes')  # overfit y lock por defecto
+SEEDS = (42, 17, 123)  # 42 es la de siempre; 17 y 123 solo para el ensemble P07
 
 
 def variant_paths(variant):
@@ -161,8 +171,8 @@ def device_for(name):
     return torch.device(name)
 
 
-def new_model(root, device):
-    set_reproducibility(42)
+def new_model(root, device, seed=42):
+    set_reproducibility(seed)
     torch.set_num_threads(4)
     spec, original_cfg = load_spec(Path(root)/'configs/patient_features/E57_patient_feature_mean_mac.json')
     model = PatientFeatureNet(original_cfg.model).to(device)
@@ -264,12 +274,14 @@ def overfit_report(root=ROOT):
     return path
 
 
-def run_dirs(root, loss, fold, smoke, variant='p01', device_name='mps'):
+def run_dirs(root, loss, fold, smoke, variant='p01', device_name='mps', seed=42):
     if loss not in ('normal', 'weighted') or type(fold) is not int or fold not in range(5):
         raise ValueError('Pérdida/fold inválidos')
+    if seed not in SEEDS:
+        raise ValueError('Semilla no prevista (P07: 42, 17, 123)')
     if smoke and fold != 0:
         raise ValueError('El smoke técnico prefijado es fold 0')
-    name = f'{loss}_fold_{fold}_seed_42'
+    name = f'{loss}_fold_{fold}_seed_{seed}'
     # La GPU de la universidad escribe en carpetas propias: no se mezcla con el Mac
     # (CUDA/ROCm y MPS no dan números idénticos con la misma semilla).
     mode = ('smoke' if smoke else 'runs') + ('_cuda' if device_name == 'cuda' else '')
@@ -277,17 +289,17 @@ def run_dirs(root, loss, fold, smoke, variant='p01', device_name='mps'):
     return Path(root)/tech/mode/name, Path(root)/weights/mode/name
 
 
-def run(loss, fold, device_name='mps', smoke=False, root=ROOT, variant='p01'):
+def run(loss, fold, device_name='mps', smoke=False, root=ROOT, variant='p01', seed=42):
     root = Path(root)
     cfg = load_config(root, variant)
     config_path, tech, _ = variant_paths(variant)
     tag = variant.upper()
     manifest, rows = verify(root)  # mismas particiones y fuentes congeladas que N01
-    out, weights = run_dirs(root, loss, fold, smoke, variant, device_name)
+    out, weights = run_dirs(root, loss, fold, smoke, variant, device_name, seed)
     if out.exists() or weights.exists():
         raise FileExistsError('Ejecución existente: conservarla; no se sobrescribe ni reanuda')
     if not smoke:
-        smoke_path = run_dirs(root, loss, 0, True, variant, device_name)[0]/'summary.json'
+        smoke_path = run_dirs(root, loss, 0, True, variant, device_name, seed)[0]/'summary.json'
         if not smoke_path.is_file() or json.loads(smoke_path.read_text()).get('status') != 'complete':
             raise RuntimeError(f'Falta smoke técnico completo de la condición {loss} (fold 0)')
     device = device_for(device_name)
@@ -296,24 +308,29 @@ def run(loss, fold, device_name='mps', smoke=False, root=ROOT, variant='p01'):
         frames = smoke_subset(frames)
     with exclusive_lock(root, tech):
         verify(root)
-        spec, original_cfg, model = new_model(root, device)
+        spec, original_cfg, model = new_model(root, device, seed)
         initial_sha = state_sha(model)
-        fit_loader = training_loader(frames['fit'], root, 'p01', cfg, transform=train_transform(cfg))
+        fit_loader = training_loader(frames['fit'], root, 'p01', cfg, seed=seed,
+                                     transform=train_transform(cfg))
         fit_eval = eval_loader(frames['fit'], root, 10000+10*fold+1)
         inner_loader = eval_loader(frames['inner'], root, 10000+10*fold+2)
         pos_weight = patient_level_pos_weight(frames['fit']) if loss == 'weighted' else 1.
         criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(pos_weight, device=device))
-        optimizer = torch.optim.AdamW(model.parameters(), lr=.001, weight_decay=.001)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=float(cfg['learning_rate']),
+                                      weight_decay=float(cfg['weight_decay']))
+        outer_by_epoch = cfg.get('outer_predictions_per_epoch', False)
+        if outer_by_epoch:
+            outer_loader = eval_loader(frames['outer'], root, 10000+10*fold+3)
         scheduler = LearningRateSchedule(optimizer, original_cfg.training)
         checkpoint_spec = copy.deepcopy(spec)
         checkpoint_spec['experiment'].update(
-            experiment_id=f'{tag}_{loss}_fold_{fold}_seed_42' + ('_smoke' if smoke else ''),
+            experiment_id=f'{tag}_{loss}_fold_{fold}_seed_{seed}' + ('_smoke' if smoke else ''),
             output_dir=str(out.relative_to(root)), checkpoint_dir=str(weights.relative_to(root)))
         checkpoint_spec['experiment']['training']['loss'] = loss
         checkpoint_spec['experiment']['data']['validation_fold'] = fold
         out.mkdir(parents=True)
         weights.mkdir(parents=True)
-        base = dict(schema='new_approach_p01_run_v1', variant=variant, loss=loss, fold=fold,
+        base = dict(schema='new_approach_p01_run_v1', variant=variant, loss=loss, fold=fold, seed=seed,
                     scientific_result=not smoke, test_evaluated=False, batch=cfg['batch'],
                     augmentation=cfg.get('augmentation'),
                     n01_protocol_sha256=sha(root/N01_TECH/'protocol/manifest.json'),
@@ -350,6 +367,12 @@ def run(loss, fold, device_name='mps', smoke=False, root=ROOT, variant='p01'):
                     inner_ap=inner_result['metrics']['pr_auc'],
                     fit_prob_std=float(fit_patients.probability.std()),
                     learning_rate=lr, seconds=time.perf_counter()-tick))
+                if outer_by_epoch:
+                    # Solo para el análisis secundario de época fija: no se imprime ni decide nada.
+                    _, epoch_outer, _ = evaluate(model, outer_loader, device)
+                    epoch_outer.assign(epoch=epoch).to_csv(
+                        out/'predictions_outer_patient_by_epoch.csv', index=False,
+                        mode='a', header=epoch == 1)
                 checkpoint = dict(model_class='PatientFeatureNet_v1', config=checkpoint_spec,
                                   epoch=epoch, model_state_dict=model.state_dict(),
                                   optimizer_state_dict=optimizer.state_dict(),
@@ -445,6 +468,7 @@ def main():
         p.add_argument('--loss', choices=['normal', 'weighted'], required=True)
         p.add_argument('--fold', type=int, choices=range(5), required=True)
         p.add_argument('--device', choices=['mps', 'cpu', 'cuda'], default='mps')
+        p.add_argument('--seed', type=int, choices=SEEDS, default=42)
     args = parser.parse_args()
     if args.command == 'overfit':
         overfit(args.recipe, args.device)
@@ -454,7 +478,8 @@ def main():
         table = report(variant=args.variant, mode='runs_cuda' if args.gpu else 'runs')
         print(table.round(4).to_string(index=False) if len(table) else 'Sin ejecuciones completas')
     else:
-        run(args.loss, args.fold, args.device, smoke=args.command == 'smoke', variant=args.variant)
+        run(args.loss, args.fold, args.device, smoke=args.command == 'smoke', variant=args.variant,
+            seed=args.seed)
 
 
 if __name__ == '__main__':

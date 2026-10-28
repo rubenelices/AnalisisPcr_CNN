@@ -1,0 +1,19 @@
+{
+  "schema": "new_approach_p01_v1",
+  "description": "E57 intacta; único cambio: lotes de 10 pacientes x 2 cortes aleatorios (antes 2 pacientes x 10 cortes)",
+  "reference_model": "configs/patient_features/E57_patient_feature_mean_mac.json",
+  "splits": "N01 congelado (FIT / interna 20% seed42 / exterior = fold docente)",
+  "batch": {
+    "patients_per_batch": 10,
+    "cuts_per_patient": 2,
+    "passes_per_epoch": 5
+  },
+  "epochs": 50,
+  "patience": 10,
+  "learning_rate": 0.001,
+  "weight_decay": 0.001,
+  "overfit": {
+    "patients_per_class": 20,
+    "epochs": 30
+  }
+}
