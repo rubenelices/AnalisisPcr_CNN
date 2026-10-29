@@ -128,11 +128,11 @@ class DCEInferenceEngine:
             model_version=self.model_version,
         )
 
-    def occlusion_tensor(self, image: Tensor, patch: int = 16) -> OcclusionMap:
+    def occlusion_tensor(self, image: Tensor, patch: int = 16, phases: tuple[int, ...] = (0, 1, 2)) -> OcclusionMap:
         """Mapa de oclusión del corte con el mismo modelo y la misma entrada que la predicción."""
         if image.shape != (3, 256, 256) or image.dtype != torch.float32 or not torch.isfinite(image).all():
             raise ValueError("Se esperaba un tensor float32 finito de forma (3, 256, 256)")
-        return occlusion_map(self.model, image, self.device, patch=patch)
+        return occlusion_map(self.model, image, self.device, patch=patch, phases=phases)
 
     def predict_sources(self, sources: Mapping[str, ImageSource]) -> InferenceResult:
         return self.predict_tensor(load_dce_triplet(sources))

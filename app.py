@@ -23,6 +23,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 from src.pipeline.data import DataValidationError, load_dce_triplet
 from src.web.inference import DCEInferenceEngine, EDUCATIONAL_NOTICE, prediction_as_dict
+from src.web.laboratorio import FASES, aplicar, leer_transformacion, resumen
 
 
 PHASES = ("PRE", "EARLY", "LATE")
@@ -197,21 +198,46 @@ def create_app(
             return jsonify({"error": str(exc)}), 400
         return jsonify(dict(prediction_as_dict(result), warnings=warnings))
 
+    @app.post("/api/laboratorio")
+    def laboratorio() -> Any:
+        """Transforma el corte (aumentos del entrenamiento o sondas sobre las fases) y vuelve a predecir."""
+        try:
+            transformacion = leer_transformacion(request.form)
+            image = aplicar(uploaded_triplet(), transformacion)
+            engine = engine_or_none()
+            if engine is None:
+                return jsonify({"error": "Aun no hay un modelo entrenado configurado."}), 503
+            result = engine.predict_tensor(image)
+        except (DataValidationError, ValueError, OSError) as exc:
+            return jsonify({"error": str(exc)}), 400
+        return jsonify(dict(prediction_as_dict(result), **resumen(image, transformacion)))
+
     @app.post("/api/occlusion")
     def occlusion() -> Any:
-        """Mapa de oclusión del mismo corte: cuánto cambia la probabilidad al tapar cada cuadrado."""
+        """Mapa de oclusión del mismo corte: cuánto cambia la probabilidad al tapar cada cuadrado.
+
+        Opcional: ``patch`` (8, 16 o 32 píxeles) y ``fase`` (PRE, EARLY o LATE; por defecto, las tres).
+        """
         try:
+            patch = int(request.form.get("patch", 16))
+            if patch not in (8, 16, 32):
+                raise ValueError("patch debe ser 8, 16 o 32")
+            fase = request.form.get("fase") or None
+            if fase is not None and fase not in FASES:
+                raise ValueError(f"fase debe ser una de {', '.join(FASES)}")
+            phases = (FASES.index(fase),) if fase else (0, 1, 2)
             image = uploaded_triplet()
             engine = engine_or_none()
             if engine is None:
                 return jsonify({"error": "Aun no hay un modelo entrenado configurado."}), 503
-            result = engine.occlusion_tensor(image)
+            result = engine.occlusion_tensor(image, patch=patch, phases=phases)
         except (DataValidationError, ValueError, OSError) as exc:
             return jsonify({"error": str(exc)}), 400
         return jsonify({
             "base_probability": result.base_probability,
             "patch": result.patch,
             "size": result.size,
+            "fase": fase,
             "deltas": result.deltas,
             "latency_ms": result.latency_ms,
         })
