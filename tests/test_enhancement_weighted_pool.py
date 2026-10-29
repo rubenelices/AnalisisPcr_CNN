@@ -2,10 +2,10 @@ import json
 from pathlib import Path
 import pytest
 import torch
-from src.enhancement_weighted_pool import EnhancementWeightedPool
-from src.multimodal_model import MultimodalPCRNet, load_multimodal_checkpoint
-from src.train_multimodal import load_spec
-from src.clinical_features import ClinicalPreprocessor
+from src.models.enhancement_weighted_pool import EnhancementWeightedPool
+from src.models.multimodal_model import MultimodalPCRNet, load_multimodal_checkpoint
+from src.training.train_multimodal import load_spec
+from src.pipeline.clinical_features import ClinicalPreprocessor
 
 
 def test_pool_has_zero_parameters_and_uniform_fallback():
@@ -45,7 +45,7 @@ def test_initial_weights_rng_and_count_match_e58():
 
 
 def test_model_backward_and_loader_roundtrip(tmp_path):
-    spec,cfg=load_spec('experimentos_datos/D14_pooling_realce/config.json')
+    spec,cfg=load_spec('experiments/D14_pooling_realce/config.json')
     model=MultimodalPCRNet(cfg.model,image_pooling=spec['image_pooling'])
     x=torch.rand(2,3,256,256);clinical=torch.zeros(2,8)
     out=model(x,clinical);assert out.shape==(2,) and torch.isfinite(out).all()
@@ -90,7 +90,7 @@ def test_negative_realce_fallback_and_late_not_used_for_weights():
 
 
 def test_checkpoint_version_requires_pool_mode(tmp_path):
-    spec,cfg=load_spec('experimentos_datos/D14_pooling_realce/config.json')
+    spec,cfg=load_spec('experiments/D14_pooling_realce/config.json')
     model=MultimodalPCRNet(cfg.model,image_pooling='enhancement_weighted')
     prep=ClinicalPreprocessor((50.,0.,0.,0.),50.,10.,878)
     spec.pop('image_pooling')

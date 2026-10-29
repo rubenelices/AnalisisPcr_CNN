@@ -5,10 +5,10 @@ import pytest
 import torch
 from torch import nn
 
-from src.image_feature_normalization import FixedImageFeatureNorm
-from src.multimodal_model import MultimodalPCRNet,load_multimodal_checkpoint
-from src.train_multimodal import load_spec
-from src.clinical_features import ClinicalPreprocessor
+from src.models.image_feature_normalization import FixedImageFeatureNorm
+from src.models.multimodal_model import MultimodalPCRNet,load_multimodal_checkpoint
+from src.training.train_multimodal import load_spec
+from src.pipeline.clinical_features import ClinicalPreprocessor
 from test_multimodal_clinical import patients
 
 
@@ -62,7 +62,7 @@ def test_default_identity_exact_initialization_rng_and_gradient():
 def test_own_model_update_restoration_and_zero_extra_parameters(tmp_path,device):
     if device=='mps' and not torch.backends.mps.is_available():pytest.skip('MPS no disponible')
     torch.set_num_threads(2);torch.manual_seed(42)
-    spec,cfg=load_spec('experimentos_datos/D19_norma_features/config.json')
+    spec,cfg=load_spec('experiments/D19_norma_features/config.json')
     model=MultimodalPCRNet(cfg.model,feature_normalization=spec['feature_normalization']).to(device)
     assert sum(p.numel() for p in model.parameters())==294289
     x=torch.rand(2,3,256,256,device=device);c=torch.randn(2,8,device=device)

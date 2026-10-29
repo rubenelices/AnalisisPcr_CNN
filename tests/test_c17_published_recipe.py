@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import torch
-from src import train_c17_published_recipe as c17
+from src.training import train_c17_published_recipe as c17
 
 
 @pytest.mark.parametrize('draws,dims',[([.9,.9],()),([.1,.9],(-1,)),([.9,.1],(-2,)),([.1,.1],(-2,-1))])
@@ -73,8 +73,8 @@ def test_prepared_notebook_contains_no_executed_training_cells():
 
 
 def test_new_schema_not_read_as_historical(tmp_path):
-    from src.balanced_results import entries
-    from src.clear_results import completed_runs
+    from src.reporting.balanced_results import entries
+    from src.reporting.clear_results import completed_runs
     folder=tmp_path/c17.ROOT/'resultados/normal/fold_0_seed_42';folder.mkdir(parents=True)
     (folder/'history.csv').write_text('epoch,train_loss\n1,.6\n')
     (folder/'config_resolved.json').write_text(json.dumps({'recipe':c17.recipe()}))
@@ -83,9 +83,9 @@ def test_new_schema_not_read_as_historical(tmp_path):
 
 
 def test_pending_results_keep_old_notebook_cells(tmp_path,monkeypatch):
-    from src import c17_results as view
+    from src.reporting import c17_results as view
     monkeypatch.chdir(tmp_path)
-    main=Path('experimentos_equilibrados/RESULTADOS.ipynb');main.parent.mkdir()
+    main=Path('experiments/RESULTADOS.ipynb');main.parent.mkdir()
     old=nbformat.v4.new_code_cell('historical',execution_count=1,outputs=[nbformat.v4.new_output('stream',name='stdout',text='preserved')])
     nbformat.write(nbformat.v4.new_notebook(cells=[old]),main)
     view.build();view.build()
@@ -119,9 +119,9 @@ def test_checkpoint_roundtrip_without_training(tmp_path):
 
 
 def test_six_panel_plot_from_synthetic_reports(tmp_path):
-    from src.c17_results import figure
-    from src.campaign_20261015_fast import enrich
-    from src.metrics import binary_metrics
+    from src.reporting.c17_results import figure
+    from src.campaigns.campaign_20261015_fast import enrich
+    from src.evaluation.metrics import binary_metrics
     from PIL import Image
     folder=tmp_path/'normal/fold0';folder.mkdir(parents=True)
     h=pd.DataFrame(dict(epoch=[1,2],train_eval_loss=[.65,.6],validation_loss=[.66,.62],

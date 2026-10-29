@@ -3,7 +3,7 @@ import pytest
 import torch
 from torch import nn
 
-from src.spatial_pooling import make_downsampling_pool
+from src.models.spatial_pooling import make_downsampling_pool
 
 
 @pytest.mark.parametrize("mode", ["max", "average"])

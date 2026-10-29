@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.analisis_p05 import analizar, linea_base_cohorte
+from src.analysis.analisis_p05 import analizar, linea_base_cohorte
 
 
 def _pacientes(n=300, seed=0):

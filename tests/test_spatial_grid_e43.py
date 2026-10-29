@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 import torch
 
-from src.architectures import BaseCNNConfig, BreastPCRNet, trainable_parameter_count
-from src.document_architectures import trace
-from src.experiment_config import load_experiment_config, experiment_config_from_dict
+from src.models.architectures import BaseCNNConfig, BreastPCRNet, trainable_parameter_count
+from src.reporting.document_architectures import trace
+from src.training.experiment_config import load_experiment_config, experiment_config_from_dict
 
 ROOT = Path(__file__).resolve().parents[1]
 

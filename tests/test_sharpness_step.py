@@ -5,7 +5,7 @@ import pytest
 import torch
 from torch import nn
 
-from src.sharpness_step import SAMConfig, sam_step
+from src.training.sharpness_step import SAMConfig, sam_step
 
 
 def test_quadratic_perturbs_then_updates_original_weight_once():
@@ -172,8 +172,8 @@ def test_typed_configuration_rejects_invalid_values(settings):
 
 
 def test_real_reference_cnn_updates_all_parameters_with_single_adamw_step():
-    from src.architectures import BreastPCRNet
-    from src.experiment_config import load_experiment_config
+    from src.models.architectures import BreastPCRNet
+    from src.training.experiment_config import load_experiment_config
     class CountAdamW(torch.optim.AdamW):
         calls = 0
         def step(self,closure=None):

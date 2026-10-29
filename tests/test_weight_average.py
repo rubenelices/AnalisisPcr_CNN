@@ -5,7 +5,7 @@ import pytest
 import torch
 from torch import nn
 
-from src.weight_average import EMAConfig, ExponentialModelAverage
+from src.training.weight_average import EMAConfig, ExponentialModelAverage
 
 
 def test_two_updates_exact_arithmetic_and_integer_counter_copy():
@@ -93,8 +93,8 @@ def test_half_complex_and_empty_models_rejected():
 def test_real_e19_cnn_update_tracks_every_weight_and_bn_buffer_without_rng():
     # Modelo real, entrada sintética pequeña para control algebraico, no calidad.
     from pathlib import Path
-    from src.architectures import BreastPCRNet,trainable_parameter_count
-    from src.experiment_config import load_experiment_config
+    from src.models.architectures import BreastPCRNet,trainable_parameter_count
+    from src.training.experiment_config import load_experiment_config
     root=Path(__file__).resolve().parents[1]
     model=BreastPCRNet(load_experiment_config(root/'configs/experiments/E19_weight_decay_001_mac.json').model)
     average=ExponentialModelAverage(model,0.99)

@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.compare_experiments import compare_experiments, save_comparison
-from src.experiment_config import load_experiment_config
-from src.metrics import binary_metrics
+from src.evaluation.compare_experiments import compare_experiments, save_comparison
+from src.training.experiment_config import load_experiment_config
+from src.evaluation.metrics import binary_metrics
 
 
 def pair(tmp_path, scientific=True):

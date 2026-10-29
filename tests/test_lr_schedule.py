@@ -5,10 +5,10 @@ import json
 import pytest
 import torch
 
-from src.architectures import BreastPCRNet, trainable_parameter_count
-from src.compare_experiments import _comparability
-from src.experiment_config import TrainingConfig, experiment_config_from_dict, load_experiment_config
-from src.learning_rate_schedule import LRScheduleConfig, LearningRateSchedule, rate_for_epoch
+from src.models.architectures import BreastPCRNet, trainable_parameter_count
+from src.evaluation.compare_experiments import _comparability
+from src.training.experiment_config import TrainingConfig, experiment_config_from_dict, load_experiment_config
+from src.training.learning_rate_schedule import LRScheduleConfig, LearningRateSchedule, rate_for_epoch
 
 
 def config(name):
@@ -126,8 +126,8 @@ def test_nonfinite_base_rate_and_invalid_config_type_and_epoch_order():
 
 
 def test_synthetic_checkpoint_inference_remains_same_five_times(tmp_path):
-    from src.inference import DCEInferenceEngine
-    from src.data import load_dce_triplet
+    from src.web.inference import DCEInferenceEngine
+    from src.pipeline.data import load_dce_triplet
     from test_inference import _sources
     cfg=config('E28_warmup_cosine_mac')
     model=BreastPCRNet(cfg.model).eval()

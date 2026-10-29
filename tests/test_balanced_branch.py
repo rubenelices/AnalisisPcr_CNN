@@ -4,16 +4,16 @@ from pathlib import Path
 import nbformat
 import pytest
 import torch
-from src.balanced_results import entries,overview,class_f1,class_table,build
-from src.train_multimodal import load_spec
-from src.multimodal_model import MultimodalPCRNet
+from src.reporting.balanced_results import entries,overview,class_f1,class_table,build
+from src.training.train_multimodal import load_spec
+from src.models.multimodal_model import MultimodalPCRNet
 
 NAMES=('B01_bce_ponderada','B02_aumento_geometrico','B03_silu_cnn','B04_semilla17')
 
 @pytest.mark.parametrize('name',NAMES)
 def test_configs_are_basic_independent_and_not_debug(name):
-    spec,cfg=load_spec(f'experimentos_equilibrados/{name}/config.json')
-    _,ref=load_spec('experimentos_datos/D36_edad_menopausia/config.json')
+    spec,cfg=load_spec(f'experiments/{name}/config.json')
+    _,ref=load_spec('experiments/D36_age_menopause/run/config.json')
     assert spec['clinical_input_columns']==spec['active_clinical_columns']==['age','menopause']
     assert cfg.training.epochs==50 and cfg.training.early_stopping_patience==10
     assert cfg.data.train_patients_per_class is None and cfg.data.validation_fold==0
@@ -22,30 +22,30 @@ def test_configs_are_basic_independent_and_not_debug(name):
     assert cfg.training.seed==(17 if name==NAMES[3] else 42)
     assert cfg.data.augmentation.enabled==(name==NAMES[1])
     assert cfg.training.learning_rate==ref.training.learning_rate and cfg.model.channels==ref.model.channels
-    assert cfg.output_dir.startswith(f'experimentos_equilibrados/{name}/resultados/')
+    assert cfg.output_dir.startswith(f'experiments/{name}/resultados/')
 
 @pytest.mark.parametrize('name',NAMES)
 def test_smokes_prepared_not_scientific(name):
-    _,cfg=load_spec(f'experimentos_equilibrados/{name}/smoke.json')
+    _,cfg=load_spec(f'experiments/{name}/smoke.json')
     assert cfg.training.epochs==2 and cfg.data.train_patients_per_class==4
     assert cfg.data.validation_patients_per_class==2 and cfg.output_dir.startswith('reports/smoke/')
 
 def test_silu_architecture_real_shapes_no_training():
     torch.set_num_threads(2)
-    _,cfg=load_spec('experimentos_equilibrados/B03_silu_cnn/config.json')
+    _,cfg=load_spec('experiments/B03_silu_cnn/config.json')
     model=MultimodalPCRNet(cfg.model).eval()
     assert sum(isinstance(m,torch.nn.SiLU) for m in model.image_encoder.modules())==8
     assert isinstance(model.clinical_branch[1],torch.nn.ReLU)
     assert sum(p.numel() for p in model.parameters())==294289
     with torch.inference_mode():z=model(torch.zeros(2,3,64,64),torch.zeros(2,8))
     assert z.shape==(2,) and torch.isfinite(z).all()
-    folder=Path('experimentos/B03_silu_cnn')
+    folder=Path('experiments/B03_silu_cnn')
     assert (folder/'arquitectura.png').is_file() and (folder/'arquitectura.svg').is_file()
     assert 'SiLU' in (folder/'README.md').read_text()
 
 def fixture_config(tmp_path,output=None):
-    folder=tmp_path/'experimentos_equilibrados/B01_bce_ponderada';folder.mkdir(parents=True)
-    spec=json.loads(Path('experimentos_equilibrados/B01_bce_ponderada/config.json').read_text())
+    folder=tmp_path/'experiments/B01_bce_ponderada';folder.mkdir(parents=True)
+    spec=json.loads(Path('experiments/B01_bce_ponderada/config.json').read_text())
     if output is not None:spec['experiment']['output_dir']=output
     (folder/'config.json').write_text(json.dumps(spec));return spec
 
@@ -75,7 +75,7 @@ def test_partial_not_marked_complete(tmp_path):
 
 def test_extra_folds_same_id_preserved_separately(tmp_path):
     spec=fixture_config(tmp_path)
-    extra=tmp_path/'experimentos_equilibrados/B01_bce_ponderada/resultados/fold_1_seed_42'
+    extra=tmp_path/'experiments/B01_bce_ponderada/resultados/fold_1_seed_42'
     extra.mkdir(parents=True);spec['experiment']['data']['validation_fold']=1
     (extra/'config_resolved.json').write_text(json.dumps(spec))
     (extra/'history.csv').write_text('epoch,train_loss\n1,0.6\n')
@@ -92,7 +92,7 @@ def test_branch_paths_guarded(tmp_path,output):
 
 def test_forbidden_clinical_inputs_rejected(tmp_path):
     spec=fixture_config(tmp_path);spec['clinical_input_columns']=['age','HR']
-    (tmp_path/'experimentos_equilibrados/B01_bce_ponderada/config.json').write_text(json.dumps(spec))
+    (tmp_path/'experiments/B01_bce_ponderada/config.json').write_text(json.dumps(spec))
     with pytest.raises(ValueError,match='sin HR'):entries(tmp_path)
 
 def test_incomplete_final_report_is_not_trusted(tmp_path,monkeypatch):
@@ -101,7 +101,7 @@ def test_incomplete_final_report_is_not_trusted(tmp_path,monkeypatch):
     def reject(*args,**kwargs):
         assert kwargs['require_scientific'] is True
         raise ValueError('Informe inconsistente')
-    monkeypatch.setattr('src.balanced_results._load_experiment',reject)
+    monkeypatch.setattr('src.reporting.balanced_results._load_experiment',reject)
     with pytest.raises(ValueError,match='inconsistente'):entries(tmp_path)
 
 def test_f1_classes_not_confused_with_balanced_accuracy():

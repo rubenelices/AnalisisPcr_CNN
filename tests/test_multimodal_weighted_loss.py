@@ -6,8 +6,8 @@ import pytest
 import torch
 from torch import nn
 
-from src.train import build_criterion
-from src.train_multimodal import load_spec, train_epoch, evaluate
+from src.training.train import build_criterion
+from src.training.train_multimodal import load_spec, train_epoch, evaluate
 
 
 def config():

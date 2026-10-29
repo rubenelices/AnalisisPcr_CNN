@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.analyze_n01_fold0 import paired_errors
+from src.analysis.analyze_n01_fold0 import paired_errors
 
 
 def test_paired_error_counts_match_patients_even_if_rows_are_reordered():

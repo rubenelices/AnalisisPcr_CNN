@@ -1,9 +1,9 @@
 """Fichas de operadores independientes; sin modelos científicos nuevos."""
 from torch import nn
-from src.document_architectures import trace
-from src.phase_representation import PhaseRepresentation
-from src.triplet_standardization import TripletStandardization
-from src.power_mean_pool import FixedPowerMeanPool
+from src.reporting.document_architectures import trace
+from src.pipeline.phase_representation import PhaseRepresentation
+from src.pipeline.triplet_standardization import TripletStandardization
+from src.models.power_mean_pool import FixedPowerMeanPool
 
 
 def synthetic(normalization='none',pool=None):

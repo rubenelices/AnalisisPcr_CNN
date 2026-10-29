@@ -8,9 +8,9 @@ import pytest
 import torch
 from torch import nn
 
-from src.architectures import BreastPCRNet, trainable_parameter_count
-from src.experiment_config import load_experiment_config
-from src.run_mac_batch import SPECS, EXPERIMENTS, MANIFEST, ROOT, validate_plan, changed_settings
+from src.models.architectures import BreastPCRNet, trainable_parameter_count
+from src.training.experiment_config import load_experiment_config
+from src.campaigns.run_mac_batch import SPECS, EXPERIMENTS, MANIFEST, ROOT, validate_plan, changed_settings
 
 
 @pytest.mark.parametrize("name,parent,changes,_", SPECS)
@@ -31,7 +31,7 @@ def test_parent_changes_and_smoke_budget(name, parent, changes, _):
 
 @pytest.mark.parametrize("name", EXPERIMENTS)
 def test_actual_layers_dimensions_and_trace_parameter_sum(name):
-    from src.document_architectures import trace
+    from src.reporting.document_architectures import trace
     cfg = load_experiment_config(f"configs/experiments/{name}.json")
     model = BreastPCRNet(cfg.model).eval()
     steps = trace(model)
@@ -56,7 +56,7 @@ def sandbox_plan(tmp_path):
 
 
 def test_preview_never_launches_or_writes(tmp_path, monkeypatch, capsys):
-    import src.run_mac_batch as queue
+    import src.campaigns.run_mac_batch as queue
     sandbox_plan(tmp_path)
     monkeypatch.setattr(queue, 'ROOT', tmp_path)
     monkeypatch.setattr(queue, 'run_child', lambda *args: pytest.fail('Vista previa entrenó'))
@@ -78,7 +78,7 @@ def test_modified_configs_rejected_before_execution(tmp_path, parent):
 
 
 def test_partial_run_and_orphan_log_are_preserved(tmp_path, monkeypatch):
-    import src.run_mac_batch as queue
+    import src.campaigns.run_mac_batch as queue
     sandbox_plan(tmp_path)
     monkeypatch.setattr(queue, 'ROOT', tmp_path)
     cfg = load_experiment_config(tmp_path / f'configs/experiments/{EXPERIMENTS[0]}.json')
@@ -97,7 +97,7 @@ def test_partial_run_and_orphan_log_are_preserved(tmp_path, monkeypatch):
 
 
 def test_error_stops_queue_and_releases_only_own_lock(tmp_path, monkeypatch):
-    import src.run_mac_batch as queue
+    import src.campaigns.run_mac_batch as queue
     sandbox_plan(tmp_path)
     monkeypatch.setattr(queue, 'ROOT', tmp_path)
     monkeypatch.setattr(queue, 'require_device', lambda _: torch.device('cpu'))
@@ -117,7 +117,7 @@ def test_error_stops_queue_and_releases_only_own_lock(tmp_path, monkeypatch):
 
 
 def test_completed_runs_skipped_and_explicit_device_checked(tmp_path, monkeypatch):
-    import src.run_mac_batch as queue
+    import src.campaigns.run_mac_batch as queue
     sandbox_plan(tmp_path)
     monkeypatch.setattr(queue, 'ROOT', tmp_path)
     monkeypatch.setattr(queue, 'execution_state', lambda *args: 'complete')
@@ -133,13 +133,13 @@ def test_completed_runs_skipped_and_explicit_device_checked(tmp_path, monkeypatc
 
 
 def test_duplicate_requests_rejected():
-    import src.run_mac_batch as queue
+    import src.campaigns.run_mac_batch as queue
     with pytest.raises(SystemExit):
         queue.main(['--only', 'E32', 'E32'])
 
 
 def test_kernel5_documentation_reports_real_padding(tmp_path):
-    from src.document_architectures import trace, write_sheet
+    from src.reporting.document_architectures import trace, write_sheet
     cfg = load_experiment_config('configs/experiments/E34_kernel5_compact_mac.json')
     model = BreastPCRNet(cfg.model)
     write_sheet(tmp_path, 'E34', model, 'Prueba', [], trace(model))
@@ -150,7 +150,7 @@ def test_kernel5_documentation_reports_real_padding(tmp_path):
 
 @pytest.mark.parametrize('name', ['E37_rotation5_mac', 'E39_dropout_affine_mac'])
 def test_geometry_is_shared_and_within_prefixed_bounds(name):
-    from src.augmentation import SharedRandomAffine
+    from src.pipeline.augmentation import SharedRandomAffine
     cfg = load_experiment_config(f'configs/experiments/{name}.json')
     transform = SharedRandomAffine(cfg.data.augmentation)
     plane = torch.rand(256, 256)
@@ -185,7 +185,7 @@ def test_dropout_maps_train_only_and_same_parameter_count():
 
 
 def test_child_interruption_terminates_process_and_preserves_log(tmp_path, monkeypatch):
-    import src.run_mac_batch as queue
+    import src.campaigns.run_mac_batch as queue
     actions = []
     class InterruptedChild:
         @property
@@ -208,7 +208,7 @@ def test_child_interruption_terminates_process_and_preserves_log(tmp_path, monke
 
 
 def test_mps_availability_is_verified_not_just_device_label(monkeypatch):
-    import src.run_mac_batch as queue
+    import src.campaigns.run_mac_batch as queue
     monkeypatch.setattr(torch.backends.mps, 'is_available', lambda: False)
     with pytest.raises(RuntimeError, match='MPS no disponible'):
         queue.require_device('mps')

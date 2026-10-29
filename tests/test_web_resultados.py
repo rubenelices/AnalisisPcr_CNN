@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from src.web_resultados import matriz_conjunta
+from src.web.web_resultados import matriz_conjunta
 
 
 def _fold(raiz, k, umbral, filas):
@@ -32,7 +32,7 @@ def test_matriz_conjunta_rechaza_paciente_repetida(tmp_path):
 
 
 def test_experimentos_se_leen_del_historial(tmp_path):
-    from src.web_resultados import _experimentos
+    from src.web.web_resultados import _experimentos
     md = tmp_path/'h.md'
     md.write_text(
         '| experimento | entradas | fold | seed | epocas | mejor_epoca | auc_val_max | auc_val_final | auc_train_final | descripcion |\n'
@@ -46,7 +46,7 @@ def test_experimentos_se_leen_del_historial(tmp_path):
 
 
 def test_particiones_cuentan_pacientes_y_cortes_sin_etiquetas_de_test(tmp_path):
-    from src.web_resultados import _particiones
+    from src.web.web_resultados import _particiones
     pd.DataFrame([
         ('a_z1', 'a', 'train', 1, 0), ('a_z2', 'a', 'train', 1, 0), ('b_z1', 'b', 'train', 0, 0),
         ('c_z1', 'c', 'train', 0, 1), ('t_z1', 't', 'test', 1, -1), ('t_z2', 't', 'test', 1, -1),
@@ -63,7 +63,7 @@ def test_particiones_cuentan_pacientes_y_cortes_sin_etiquetas_de_test(tmp_path):
 
 
 def test_metricas_macro_promedian_las_dos_clases():
-    from src.web_resultados import metricas_macro
+    from src.web.web_resultados import metricas_macro
     m = metricas_macro(dict(tn=92, fp=31, fn=35, tp=18))
     assert round(m['precision_pcr'], 4) == 0.3673 and round(m['recall_pcr'], 4) == 0.3396
     assert round(m['precision_macro'], 3) == 0.546 and round(m['recall_macro'], 4) == 0.5438

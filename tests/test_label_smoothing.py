@@ -2,7 +2,7 @@
 import pytest
 import torch
 from torch import nn
-from src.label_smoothing import LabelSmoothingConfig,smooth_binary_targets
+from src.training.label_smoothing import LabelSmoothingConfig,smooth_binary_targets
 
 
 def test_formula_no_mutation_dtype_device_rng():

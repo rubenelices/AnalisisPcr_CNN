@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 import torch
 
-from src.clinical_features import ClinicalPreprocessor, load_patient_clinical
-from src.multimodal_model import MultimodalPCRNet, load_multimodal_checkpoint
-from src.train_multimodal import load_spec
+from src.pipeline.clinical_features import ClinicalPreprocessor, load_patient_clinical
+from src.models.multimodal_model import MultimodalPCRNet, load_multimodal_checkpoint
+from src.training.train_multimodal import load_spec
 
 
 def patients():

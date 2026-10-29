@@ -1,10 +1,10 @@
 import json
 
-from src.clear_results import completed_runs
+from src.reporting.clear_results import completed_runs
 
 
 def test_only_complete_science_no_smoke_or_test(tmp_path):
-    base=tmp_path/'experimentos_datos'
+    base=tmp_path/'experiments'
     for name,values in [('good',{}),('debug',{'debug_patient_subset':True}),
                         ('test',{'test_evaluated':True}),('partial',{'status':'partial'})]:
         path=base/name/'resultados/fold_0_seed_42';path.mkdir(parents=True)
@@ -15,7 +15,7 @@ def test_only_complete_science_no_smoke_or_test(tmp_path):
 
 
 def test_d00_copy_is_not_counted_twice(tmp_path):
-    path=tmp_path/'experimentos_datos/D00_E58_referencia/resultados/fold_0_seed_42';path.mkdir(parents=True)
+    path=tmp_path/'experiments/D00_E58_referencia/resultados/fold_0_seed_42';path.mkdir(parents=True)
     (path/'summary.json').write_text(json.dumps(dict(status='complete',scientific_result=True,
         debug_patient_subset=False,test_evaluated=False,experiment_id='E58')))
     (path/'history.csv').write_text('epoch\n1\n')
@@ -24,8 +24,8 @@ def test_d00_copy_is_not_counted_twice(tmp_path):
 
 def test_renderer_keeps_all_epochs_and_six_graphs(tmp_path):
     import pandas as pd
-    from src.metrics import binary_metrics
-    from src.clear_results import show_run
+    from src.evaluation.metrics import binary_metrics
+    from src.reporting.clear_results import show_run
     folder=tmp_path
     predictions=pd.DataFrame(dict(patient_id=['a','b','c','d'],target=[0,0,1,1],probability=[.2,.3,.7,.8]))
     predictions.to_csv(folder/'predictions_patient.csv',index=False)

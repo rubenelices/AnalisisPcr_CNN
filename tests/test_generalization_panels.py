@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from src.generalization_panels import diagnostics
+from src.evaluation.generalization_panels import diagnostics
 
 
 def test_loss_modes_and_two_observed_auc_bars_are_separate(tmp_path,monkeypatch):

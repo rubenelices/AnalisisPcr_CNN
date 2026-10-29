@@ -5,10 +5,10 @@ from pathlib import Path
 import pytest
 import torch
 
-from src.architectures import BreastPCRNet, trainable_parameter_count
-from src.augmentation import AugmentationConfig, IntensityAugmentationConfig, build_train_transform
-from src.experiment_config import DataExperimentConfig, experiment_config_from_dict, load_experiment_config
-from src.horizontal_flip import HorizontalFlipConfig
+from src.models.architectures import BreastPCRNet, trainable_parameter_count
+from src.pipeline.augmentation import AugmentationConfig, IntensityAugmentationConfig, build_train_transform
+from src.training.experiment_config import DataExperimentConfig, experiment_config_from_dict, load_experiment_config
+from src.pipeline.horizontal_flip import HorizontalFlipConfig
 
 ROOT=Path(__file__).resolve().parents[1]
 

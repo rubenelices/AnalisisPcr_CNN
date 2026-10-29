@@ -2,7 +2,7 @@
 import pytest
 import torch
 from torch import nn
-from src.nonlinear_activation import make_activation
+from src.models.nonlinear_activation import make_activation
 
 
 def test_default_relu_identical_no_rng_or_parameters():

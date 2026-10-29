@@ -7,8 +7,8 @@ import pytest
 from sklearn.metrics import balanced_accuracy_score, f1_score
 import torch
 
-from src import new_approach_protocol as protocol
-from src import train_new_approach as runner
+from src.training import new_approach_protocol as protocol
+from src.training import train_new_approach as runner
 
 
 def rows():
@@ -74,7 +74,7 @@ def test_threshold_rejects_bad_internal_predictions(problem):
 
 
 def test_weight_counts_patients_not_cuts_and_undefined_precision():
-    from src.patient_training import patient_level_pos_weight
+    from src.training.patient_training import patient_level_pos_weight
     frame = pd.DataFrame(dict(patient_id=['a', 'b']+['c']*10, pCR=[0, 0]+[1]*10))
     assert patient_level_pos_weight(frame) == 2.
     pred = pd.DataFrame(dict(target=[0, 1], probability=[.1, .2]))
@@ -126,7 +126,7 @@ def test_existing_run_and_missing_smoke_block_before_training(tmp_path, monkeypa
 
 def test_run_selects_inner_epoch_and_freezes_before_any_outer_loader(tmp_path, monkeypatch):
     """Orquestación simulada: no imágenes ni pasos de entrenamiento reales."""
-    from src.train_patient_features import load_spec
+    from src.training.train_patient_features import load_spec
     spec, typed = load_spec(protocol.ROOT/'configs/patient_features/E57_patient_feature_mean_mac.json')
     manifest = {'config': dict(reference='unused', epochs=3, patience=10)}
     protocol_dir = tmp_path/protocol.TECH/'protocol'
@@ -180,7 +180,7 @@ def test_run_selects_inner_epoch_and_freezes_before_any_outer_loader(tmp_path, m
 
 @pytest.mark.parametrize('positive_weight', [1., 2.5])
 def test_train_objective_uses_patient_labels_and_full_positive_weight(positive_weight):
-    from src.patient_feature_model import group_features
+    from src.models.patient_feature_model import group_features
 
     class Tiny(torch.nn.Module):
         def __init__(self):

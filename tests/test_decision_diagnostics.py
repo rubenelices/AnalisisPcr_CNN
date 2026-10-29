@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from src.decision_diagnostics import threshold_table
+from src.evaluation.decision_diagnostics import threshold_table
 
 
 def test_no_predicted_positives_precision_undefined_and_counts_correct():

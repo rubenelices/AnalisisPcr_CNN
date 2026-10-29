@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
 import pytest
-from src.train_multimodal import load_spec, build_optimizer
-from src.multimodal_model import MultimodalPCRNet
+from src.training.train_multimodal import load_spec, build_optimizer
+from src.models.multimodal_model import MultimodalPCRNet
 
 
 def test_image_decay_only_and_complete_partition():
-    spec,cfg=load_spec('experimentos_datos/D12_wd_imagen001/config.json')
+    spec,cfg=load_spec('experiments/D12_wd_imagen001/config.json')
     model=MultimodalPCRNet(cfg.model)
     opt=build_optimizer(model,cfg,spec)
     assert [g['weight_decay'] for g in opt.param_groups]==[.01,.001]
@@ -26,7 +26,7 @@ def test_invalid_image_decay(tmp_path,value):
 
 
 def test_clinical_only_rejects_image_decay(tmp_path):
-    spec=json.loads(Path('experimentos_datos/D08_clinica_sola/config.json').read_text())
+    spec=json.loads(Path('experiments/D08_clinica_sola/config.json').read_text())
     spec['image_weight_decay_factor']=10
     path=tmp_path/'invalid.json';path.write_text(json.dumps(spec))
     with pytest.raises(ValueError):load_spec(path)

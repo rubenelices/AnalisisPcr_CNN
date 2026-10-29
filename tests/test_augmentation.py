@@ -5,10 +5,10 @@ from dataclasses import replace
 import pytest
 import torch
 
-from src.augmentation import (AffineParameters, AugmentationConfig, SharedRandomAffine,
+from src.pipeline.augmentation import (AffineParameters, AugmentationConfig, SharedRandomAffine,
                               apply_shared_affine, build_train_transform)
-from src.data import LoaderConfig, create_dataloaders, split_by_patient_fold
-from src.experiment_config import load_experiment_config
+from src.pipeline.data import LoaderConfig, create_dataloaders, split_by_patient_fold
+from src.training.experiment_config import load_experiment_config
 from test_data import create_tiny_dataset
 
 

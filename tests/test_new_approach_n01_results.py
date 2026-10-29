@@ -4,15 +4,15 @@ import json
 import nbformat
 import pandas as pd
 
-from src import new_approach_n01_results as reporting
-from src.new_approach_n01_results import build
-from src.new_approach_protocol import TECH, metrics
+from src.analysis import new_approach_n01_results as reporting
+from src.analysis.new_approach_n01_results import build
+from src.training.new_approach_protocol import TECH, metrics
 
 
 def test_partial_report_keeps_reference_and_notes_without_external_metrics(tmp_path):
-    dest = tmp_path/'nuevo_enfoque'
-    reference = tmp_path/'E57'
-    dest.mkdir(); reference.mkdir()
+    dest = tmp_path/'research'
+    reference = tmp_path/'experiments/E57_patient_feature_mean_mac/results'
+    dest.mkdir(); reference.mkdir(parents=True)
     (dest/'ESTADO.md').write_text('Preparado, sin nuevos resultados completos')
     old = nbformat.v4.new_markdown_cell('Antecedente histórico que no se puede perder')
     nbformat.write(nbformat.v4.new_notebook(cells=[old]), reference/'RESULTADOS.ipynb')
@@ -42,12 +42,12 @@ def test_partial_report_keeps_reference_and_notes_without_external_metrics(tmp_p
 
 
 def test_complete_pairs_report_both_matrices_summary_and_conditional_intervals(tmp_path, monkeypatch):
-    dest = tmp_path/'nuevo_enfoque'; dest.mkdir()
-    reference = tmp_path/'E57'; reference.mkdir()
+    dest = tmp_path/'research'; dest.mkdir()
+    reference = tmp_path/'experiments/E57_patient_feature_mean_mac/results'; reference.mkdir(parents=True)
     (dest/'ESTADO.md').write_text('Estado de prueba sintética')
     nbformat.write(nbformat.v4.new_notebook(), reference/'RESULTADOS.ipynb')
-    (tmp_path/'src').mkdir()
-    (tmp_path/'src/new_approach_paired.py').write_text('Marcador de implementación sintético para SHA')
+    (tmp_path/'src/analysis').mkdir(parents=True)
+    (tmp_path/'src/analysis/new_approach_paired.py').write_text('Marcador de implementación sintético para SHA')
     actual_bootstrap = reporting.paired_intervals
     monkeypatch.setattr(reporting, 'paired_intervals', lambda pairs: actual_bootstrap(pairs, repetitions=5))
     # No hace falta renderizar veinte figuras para verificar ensamblaje/tablas/intervalos.

@@ -7,9 +7,9 @@ from pathlib import Path
 import pytest
 import torch
 
-from src.final_ensemble import ROOT, RULES, EnsembleModel, choose, evaluate_test, freeze, load_ensemble
-from src.patient_feature_model import PatientFeatureNet
-from src.train_patient_features import load_spec
+from src.evaluation.final_ensemble import ROOT, RULES, EnsembleModel, choose, evaluate_test, freeze, load_ensemble
+from src.models.patient_feature_model import PatientFeatureNet
+from src.training.train_patient_features import load_spec
 
 E57_CONFIG = ROOT/'configs/patient_features/E57_patient_feature_mean_mac.json'
 
@@ -87,8 +87,8 @@ def fake_project(tmp_path):
 
 def test_freeze_writes_decision_once(tmp_path, monkeypatch):
     cohorts = fake_project(tmp_path)
-    import src.final_ensemble as fe
-    from src.cv_report import build
+    import src.evaluation.final_ensemble as fe
+    from src.evaluation.cv_report import build
     monkeypatch.setattr(fe, 'build_cv', lambda v, m, root: build(v, m, root=root, cohorts=cohorts))
     d = freeze('p02', 'runs_cuda', root=tmp_path)
     assert d['entregable'].startswith('P02_') and len(d['members']) == 5
@@ -107,7 +107,7 @@ def test_freeze_refuses_modified_rules(tmp_path):
 def test_test_runs_at_most_once_and_never_for_e57(tmp_path):
     out = tmp_path/'reports/new_approach/ENTREGA'
     out.mkdir(parents=True)
-    from src.final_ensemble import RULES_SHA
+    from src.evaluation.final_ensemble import RULES_SHA
     (out/'decision.json').write_text(json.dumps(dict(rules_sha256=RULES_SHA, entregable='E57_original')))
     with pytest.raises(ValueError):
         evaluate_test("cpu", root=tmp_path)

@@ -1,6 +1,6 @@
 import torch
 
-from src.web_aumento import a_realce, variantes
+from src.web.web_aumento import a_realce, variantes
 
 
 def _imagen():

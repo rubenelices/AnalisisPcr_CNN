@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.cv_report import build, confusion
+from src.evaluation.cv_report import build, confusion
 
 
 def fake_runs(root, mode='runs_cuda', losses=('normal', 'weighted'), folds=range(5), seed=0):

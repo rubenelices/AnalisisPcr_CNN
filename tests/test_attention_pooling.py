@@ -6,11 +6,11 @@ import pytest
 import torch
 from torch import nn
 
-from src.attention_pooling import GatedSpatialPool
-from src.architectures import BreastPCRNet, trainable_parameter_count
-from src.experiment_config import load_experiment_config, experiment_config_from_dict
-from src.document_architectures import trace
-from src.compare_experiments import _comparability
+from src.models.attention_pooling import GatedSpatialPool
+from src.models.architectures import BreastPCRNet, trainable_parameter_count
+from src.training.experiment_config import load_experiment_config, experiment_config_from_dict
+from src.reporting.document_architectures import trace
+from src.evaluation.compare_experiments import _comparability
 
 
 def config(name):
@@ -173,8 +173,8 @@ def test_invalid_feature_shapes(shape):
 
 
 def test_five_synthetic_web_inputs_are_identical_to_model_and_no_random_in_eval(tmp_path):
-    from src.inference import DCEInferenceEngine
-    from src.data import load_dce_triplet
+    from src.web.inference import DCEInferenceEngine
+    from src.pipeline.data import load_dce_triplet
     from test_inference import _sources
     cfg=config('E30_gated_attention_mac');model=BreastPCRNet(cfg.model).eval()
     # No científico; demostrar compatibilidad también con atención NO uniforme.

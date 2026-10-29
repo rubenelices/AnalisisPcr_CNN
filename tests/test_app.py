@@ -10,7 +10,7 @@ from PIL import Image
 from torch import Tensor
 
 from app import create_app
-from src.inference import InferenceResult
+from src.web.inference import InferenceResult
 
 
 def _png(value: int) -> bytes:
@@ -72,9 +72,9 @@ def test_five_uploads_with_real_new_cnn_match_shared_pipeline(tmp_path, name):
     # PNG sintéticos y pesos aleatorios, no datos/pesos privados ni calidad científica.
     from pathlib import Path
     import torch
-    from src.architectures import BreastPCRNet
-    from src.experiment_config import load_experiment_config
-    from src.inference import DCEInferenceEngine
+    from src.models.architectures import BreastPCRNet
+    from src.training.experiment_config import load_experiment_config
+    from src.web.inference import DCEInferenceEngine
     root = Path(__file__).resolve().parents[1]
     config = load_experiment_config(root / f"configs/experiments/{name}.json")
     model = BreastPCRNet(config.model).eval()
@@ -165,8 +165,8 @@ def test_project_architecture_numbers_and_receptive_fields_match_real_e57():
     from pathlib import Path
     import torch
     from torch import nn
-    from src.patient_feature_model import PatientFeatureNet
-    from src.train_patient_features import load_spec
+    from src.models.patient_feature_model import PatientFeatureNet
+    from src.training.train_patient_features import load_spec
     root = Path(__file__).resolve().parents[1]
     _, config = load_spec(root/'configs/patient_features/E57_patient_feature_mean_mac.json')
     model = PatientFeatureNet(config.model)
@@ -225,16 +225,16 @@ def test_model_card_without_model_is_an_explicit_error(monkeypatch) -> None:
 
 def test_built_interface_is_served_at_root_with_assets_and_examples(tmp_path) -> None:
     (tmp_path / "assets").mkdir()
-    (tmp_path / "ejemplo" / "c").mkdir(parents=True)
+    (tmp_path / "examples" / "c").mkdir(parents=True)
     (tmp_path / "index.html").write_text("<div id=root></div>")
     (tmp_path / "assets" / "index.js").write_text("console.log(1)")
-    (tmp_path / "ejemplo" / "c" / "PRE.png").write_bytes(_png(10))
+    (tmp_path / "examples" / "c" / "PRE.png").write_bytes(_png(10))
     (tmp_path / "modelo").mkdir()
     (tmp_path / "modelo" / "arquitectura.svg").write_text("<svg/>")
     client = create_app(frontend_dir=tmp_path).test_client()
     assert "id=root" in client.get("/").get_data(as_text=True)
     assert client.get("/assets/index.js").status_code == 200
-    assert client.get("/ejemplo/c/PRE.png").status_code == 200
+    assert client.get("/examples/c/PRE.png").status_code == 200
     assert client.get("/modelo/arquitectura.svg").status_code == 200
     assert client.get("/no-existe.png").status_code == 404
     assert client.get("/api/modelo").status_code in (200, 503)  # la API no queda tapada

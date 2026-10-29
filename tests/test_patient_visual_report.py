@@ -4,10 +4,10 @@ import pandas as pd
 import pytest
 import torch
 
-from src.clinical_features import ClinicalPreprocessor
-from src.metrics import binary_metrics
-from src.patient_visual_report import validate_patients,threshold_table,save_patient_visual_report
-from src.train_multimodal import load_spec
+from src.pipeline.clinical_features import ClinicalPreprocessor
+from src.evaluation.metrics import binary_metrics
+from src.reporting.patient_visual_report import validate_patients,threshold_table,save_patient_visual_report
+from src.training.train_multimodal import load_spec
 
 
 def frame():
@@ -55,7 +55,7 @@ def test_new_trials_one_factor_and_unique_paths():
     base=json.loads(Path('configs/multimodal/E58_clinical_fusion_mac.json').read_text())
     paths=[]
     for name,key,value in [('D01_lr0003','learning_rate',.0003),('D02_wd0003','weight_decay',.003)]:
-        spec,cfg=load_spec(f'experimentos_datos/{name}/config.json')
+        spec,cfg=load_spec(f'experiments/{name}/config.json')
         expected=base['experiment']['training']|{key:value}
         assert spec['experiment']['training']==expected
         assert spec['experiment']['model']==base['experiment']['model']
@@ -73,7 +73,7 @@ def test_report_generates_all_artifacts_without_touching_sources(tmp_path,monkey
     (source/'summary.json').write_text(json.dumps(summary))
     pd.DataFrame(dict(epoch=[1,2],patient_roc_auc=[m['roc_auc'],.8],patient_pr_auc=[m['pr_auc'],.6])).to_csv(source/'history.csv',index=False)
     before={p.name:p.read_bytes() for p in source.iterdir()}
-    dest=Path('experimentos_datos/test/resultados')
+    dest=Path('experiments/test/resultados')
     result=save_patient_visual_report(source,dest)
     assert result['threshold_selected'] is False
     assert len(list(dest.glob('*.png')))==6

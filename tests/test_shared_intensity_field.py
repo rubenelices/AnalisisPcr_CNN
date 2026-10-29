@@ -8,7 +8,7 @@ import torch
 
 @pytest.mark.parametrize('device',['cpu','mps'])
 def test_field_geometry_temporal_sync_and_gradients(device):
-    from src.shared_intensity_field import SharedIntensityField
+    from src.pipeline.shared_intensity_field import SharedIntensityField
     if device=='mps' and not torch.backends.mps.is_available():
         pytest.skip('MPS no disponible')
     transform=SharedIntensityField(max_amplitude=.1)
@@ -29,7 +29,7 @@ def test_field_geometry_temporal_sync_and_gradients(device):
 
 
 def test_no_clipping_and_zero_amplitude_no_rng():
-    from src.shared_intensity_field import SharedIntensityField
+    from src.pipeline.shared_intensity_field import SharedIntensityField
     x=torch.ones(3,256,256)
     torch.manual_seed(17);out=SharedIntensityField(.1)(x)
     assert out.max()>1 and out.min()<1
@@ -41,12 +41,12 @@ def test_no_clipping_and_zero_amplitude_no_rng():
 
 @pytest.mark.parametrize('amplitude',[True,-.1,.3,float('nan'),'0.1'])
 def test_invalid_amplitude(amplitude):
-    from src.shared_intensity_field import SharedIntensityField
+    from src.pipeline.shared_intensity_field import SharedIntensityField
     with pytest.raises(ValueError):SharedIntensityField(amplitude)
 
 
 def test_wrapper_preserves_metadata():
-    from src.shared_intensity_field import SharedIntensityField,IntensityFieldTrainingDataset
+    from src.pipeline.shared_intensity_field import SharedIntensityField,IntensityFieldTrainingDataset
     sample={'image':torch.ones(3,256,256),'clinical':torch.arange(8.),
             'target':torch.tensor(1.),'patient_id':'train_patient'}
     wrapped=IntensityFieldTrainingDataset([sample],SharedIntensityField(.1))
@@ -57,8 +57,8 @@ def test_wrapper_preserves_metadata():
 
 
 def test_spec_isolated_from_e58():
-    from src.train_multimodal import load_spec
-    spec,cfg=load_spec('experimentos_datos/D20_campo_intensidad/config.json')
+    from src.training.train_multimodal import load_spec
+    spec,cfg=load_spec('experiments/D20_campo_intensidad/config.json')
     base,b=load_spec('configs/multimodal/E58_clinical_fusion_mac.json')
     assert cfg.model==b.model and cfg.training==b.training and cfg.data==b.data
     assert spec['image_intensity_field']=={'max_amplitude':.1}
@@ -67,8 +67,8 @@ def test_spec_isolated_from_e58():
 
 
 def test_clinical_only_rejects_field(tmp_path):
-    from src.train_multimodal import load_spec
-    spec=json.loads(Path('experimentos_datos/D08_clinica_sola/config.json').read_text())
+    from src.training.train_multimodal import load_spec
+    spec=json.loads(Path('experiments/D08_clinica_sola/config.json').read_text())
     spec['image_intensity_field']={'max_amplitude':.1}
     p=tmp_path/'invalid.json';p.write_text(json.dumps(spec))
     with pytest.raises(ValueError,match='Clínica sola'):load_spec(p)
@@ -76,14 +76,14 @@ def test_clinical_only_rejects_field(tmp_path):
 
 @pytest.mark.parametrize('device',['cpu','mps'])
 def test_full_cnn_step_and_checkpoint(tmp_path,device):
-    from src.shared_intensity_field import SharedIntensityField
-    from src.train_multimodal import load_spec
-    from src.multimodal_model import MultimodalPCRNet,load_multimodal_checkpoint
-    from src.clinical_features import ClinicalPreprocessor
+    from src.pipeline.shared_intensity_field import SharedIntensityField
+    from src.training.train_multimodal import load_spec
+    from src.models.multimodal_model import MultimodalPCRNet,load_multimodal_checkpoint
+    from src.pipeline.clinical_features import ClinicalPreprocessor
     from test_multimodal_clinical import patients
     if device=='mps' and not torch.backends.mps.is_available():pytest.skip('MPS no disponible')
     torch.set_num_threads(2);torch.manual_seed(42)
-    spec,cfg=load_spec('experimentos_datos/D20_campo_intensidad/config.json')
+    spec,cfg=load_spec('experiments/D20_campo_intensidad/config.json')
     model=MultimodalPCRNet(cfg.model).to(device)
     assert sum(p.numel() for p in model.parameters())==294289
     x=torch.stack([SharedIntensityField(.1)(torch.rand(3,256,256)) for _ in range(2)]).to(device)
@@ -103,12 +103,12 @@ def test_full_cnn_step_and_checkpoint(tmp_path,device):
 
 @pytest.mark.parametrize('shape',[(3,128,256),(2,256,256),(1,3,256,256)])
 def test_invalid_shape(shape):
-    from src.shared_intensity_field import SharedIntensityField
+    from src.pipeline.shared_intensity_field import SharedIntensityField
     with pytest.raises(ValueError):SharedIntensityField(.1)(torch.ones(shape))
 
 
 def test_invalid_dtype_and_nonfinite():
-    from src.shared_intensity_field import SharedIntensityField
+    from src.pipeline.shared_intensity_field import SharedIntensityField
     t=SharedIntensityField(.1)
     with pytest.raises(ValueError):t(torch.ones(3,256,256,dtype=torch.float64))
     x=torch.ones(3,256,256);x[0,0,0]=float('nan')
@@ -118,7 +118,7 @@ def test_invalid_dtype_and_nonfinite():
 @pytest.mark.parametrize('key,value',[('feature_normalization','l2_fixed'),('fusion_hidden',32),
     ('image_pooling','enhancement_weighted'),('image_weight_decay_factor',10)])
 def test_combination_not_allowed(tmp_path,key,value):
-    from src.train_multimodal import load_spec
-    spec=json.loads(Path('experimentos_datos/D20_campo_intensidad/config.json').read_text())
+    from src.training.train_multimodal import load_spec
+    spec=json.loads(Path('experiments/D20_campo_intensidad/config.json').read_text())
     spec[key]=value;p=tmp_path/'bad.json';p.write_text(json.dumps(spec))
     with pytest.raises(ValueError,match='Campo exige'):load_spec(p)

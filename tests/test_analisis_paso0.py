@@ -1,6 +1,6 @@
 import numpy as np
 
-from src import analisis_paso0 as A
+from src.analysis import analisis_paso0 as A
 
 
 def test_realce_centrado_queda_dentro_y_periferico_fuera():
@@ -27,7 +27,7 @@ def test_razones_de_oclusion():
 
 
 def test_variables_de_realce_relativo_y_absoluto():
-    from src.analisis_paso0b import variables_corte
+    from src.analysis.analisis_paso0b import variables_corte
     pre = np.full((64, 64), 0.2, dtype=np.float32)
     early = pre.copy(); late = pre.copy()
     early[:16] = 0.4      # PE = 1,0 en una cuarta parte del tejido
@@ -42,7 +42,7 @@ def test_variables_de_realce_relativo_y_absoluto():
 
 
 def test_region_candidata_encuentra_el_foco_de_realce():
-    from src.analisis_paso0c import region_candidata
+    from src.analysis.analisis_paso0c import region_candidata
     pre = np.full((256, 256), 0.2, dtype=np.float32)
     early = pre.copy(); late = pre.copy()
     early[150:170, 90:110] = 0.5      # foco con PE = 1,5

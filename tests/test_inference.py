@@ -10,8 +10,8 @@ import torch
 from PIL import Image
 from torch import nn
 
-from src.data import load_dce_triplet
-from src.inference import DCEInferenceEngine, prediction_as_dict
+from src.pipeline.data import load_dce_triplet
+from src.web.inference import DCEInferenceEngine, prediction_as_dict
 
 
 class MeanLogit(nn.Module):
@@ -55,8 +55,8 @@ def test_inference_rejects_wrong_tensor_contract() -> None:
 
 
 def test_phase_representation_is_restored_from_checkpoint_for_web(tmp_path: Path) -> None:
-    from src.architectures import BreastPCRNet
-    from src.experiment_config import load_experiment_config
+    from src.models.architectures import BreastPCRNet
+    from src.training.experiment_config import load_experiment_config
 
     root = Path(__file__).resolve().parents[1]
     config = load_experiment_config(root / "configs/experiments/E13_phase_differences.json")

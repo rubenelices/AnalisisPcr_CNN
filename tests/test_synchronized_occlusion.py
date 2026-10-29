@@ -1,6 +1,6 @@
 import pytest
 import torch
-from src.synchronized_occlusion import SynchronizedOcclusion, OccludedTrainingDataset
+from src.pipeline.synchronized_occlusion import SynchronizedOcclusion, OccludedTrainingDataset
 
 
 def test_disabled_preserves_values_identity_rng():

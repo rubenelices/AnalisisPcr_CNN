@@ -1,4 +1,4 @@
-"""Servidor de la web: API de inferencia (``src.inference``) e interfaz.
+"""Servidor de la web: API de inferencia (``src.web.inference``) e interfaz.
 
 Arranque: ``python app.py`` carga el modelo de entrega (``DEFAULT_MODEL``). Las variables
 ``BREAST_PCR_CHECKPOINT`` y ``BREAST_PCR_DECISION`` permiten usar otro sin tocar el código.
@@ -21,8 +21,8 @@ import pandas as pd
 from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from src.data import DataValidationError, load_dce_triplet
-from src.inference import DCEInferenceEngine, EDUCATIONAL_NOTICE, prediction_as_dict
+from src.pipeline.data import DataValidationError, load_dce_triplet
+from src.web.inference import DCEInferenceEngine, EDUCATIONAL_NOTICE, prediction_as_dict
 
 
 PHASES = ("PRE", "EARLY", "LATE")
@@ -34,7 +34,7 @@ FRONTEND_DIR = Path(__file__).resolve().parent / "frontend" / "dist"
 ROOT = Path(__file__).resolve().parent
 DEFAULT_MODEL = (
     ROOT / "checkpoints/E57_patient_feature_mean_mac/fold_0_seed_42/best.pt",
-    ROOT / "modelo/protocolo_e57.json",  # umbral y SHA-256 congelados antes del test
+    ROOT / "model/protocolo_e57.json",  # umbral y SHA-256 congelados antes del test
 )
 HF_FILENAME = "best.pt"
 SAMPLES_CSV = ROOT / "breastdcedl" / "metadata" / "samples.csv"

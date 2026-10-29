@@ -2,8 +2,8 @@
 import pytest
 import torch
 
-from src.horizontal_flip import HorizontalFlipConfig,SharedRandomHorizontalFlip,apply_shared_horizontal_flip
-from src.phase_representation import PhaseRepresentation
+from src.pipeline.horizontal_flip import HorizontalFlipConfig,SharedRandomHorizontalFlip,apply_shared_horizontal_flip
+from src.pipeline.phase_representation import PhaseRepresentation
 
 
 def test_exact_spatial_mirror_shared_channels_and_involution_without_mutation():

@@ -6,9 +6,9 @@ import pytest
 import torch
 from torch import nn
 
-from src.architectures import BaseCNNConfig, trainable_parameter_count
-from src.patient_feature_model import PatientFeatureNet, group_features, load_feature_checkpoint
-from src.train_patient_features import load_spec, evaluate_features, train_epoch, central_cut_predictions, run
+from src.models.architectures import BaseCNNConfig, trainable_parameter_count
+from src.models.patient_feature_model import PatientFeatureNet, group_features, load_feature_checkpoint
+from src.training.train_patient_features import load_spec, evaluate_features, train_epoch, central_cut_predictions, run
 
 ROOT = Path(__file__).resolve().parents[1]
 

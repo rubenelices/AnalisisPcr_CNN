@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 from torch import nn
 
-from src.model import MinimalCNN, trainable_parameter_count
+from src.models.model import MinimalCNN, trainable_parameter_count
 
 
 def test_minimal_cnn_output_and_shape_trace() -> None:

@@ -11,7 +11,7 @@ import torch
 from PIL import Image
 from torch.utils.data import RandomSampler, SequentialSampler
 
-from src.data import (
+from src.pipeline.data import (
     BreastDCEDataset,
     DataValidationError,
     LoaderConfig,

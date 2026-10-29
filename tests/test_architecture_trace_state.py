@@ -2,9 +2,9 @@
 from pathlib import Path
 import pytest
 import torch
-from src.architectures import BreastPCRNet
-from src.document_architectures import trace
-from src.experiment_config import load_experiment_config
+from src.models.architectures import BreastPCRNet
+from src.reporting.document_architectures import trace
+from src.training.experiment_config import load_experiment_config
 
 ROOT=Path(__file__).resolve().parents[1]
 

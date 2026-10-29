@@ -2,12 +2,12 @@ from dataclasses import replace
 import pandas as pd
 import pytest
 import torch
-from src.train_e57_weighted import load_spec, patient_criterion, evaluate_features
-from src.train_patient_features import load_spec as original_spec, evaluate_features as original_eval
-from src.patient_feature_model import PatientFeatureNet
+from src.training.train_e57_weighted import load_spec, patient_criterion, evaluate_features
+from src.training.train_patient_features import load_spec as original_spec, evaluate_features as original_eval
+from src.models.patient_feature_model import PatientFeatureNet
 from test_patient_features import batches
 
-CONFIG='experimentos/E57_ponderada_moderada/config.json'
+CONFIG='experiments/E57_ponderada_moderada/config.json'
 
 
 def test_only_loss_changes_against_e57():
@@ -41,7 +41,7 @@ def test_weight_changes_loss_not_predictions_or_selection_metrics():
 
 
 def test_checkpoint_restore_with_weighted_config(tmp_path):
-    from src.patient_feature_model import load_feature_checkpoint
+    from src.models.patient_feature_model import load_feature_checkpoint
     s,c=load_spec(CONFIG);m=PatientFeatureNet(c.model).eval()
     image=torch.rand(2,3,32,32)
     with torch.no_grad():expected=m(image)
@@ -52,11 +52,11 @@ def test_checkpoint_restore_with_weighted_config(tmp_path):
 
 
 def test_refresh_general_notebook_only_for_scientific_run(monkeypatch):
-    from src.train_e57_weighted import refresh_results_notebook
-    import src.clear_results
-    import src.balanced_results
-    monkeypatch.setattr(src.balanced_results,'build',lambda: None)
+    from src.training.train_e57_weighted import refresh_results_notebook
+    import src.reporting.clear_results
+    import src.reporting.balanced_results
+    monkeypatch.setattr(src.reporting.balanced_results,'build',lambda: None)
     calls=[]
-    monkeypatch.setattr(src.clear_results,'build',lambda: calls.append('build') or 'notebook')
+    monkeypatch.setattr(src.reporting.clear_results,'build',lambda: calls.append('build') or 'notebook')
     assert refresh_results_notebook(True) is None and not calls
     assert refresh_results_notebook(False)=='notebook' and calls==['build']

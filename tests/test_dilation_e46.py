@@ -6,10 +6,10 @@ import pytest
 import torch
 from torch import nn
 
-from src.architectures import BaseCNNConfig, BreastPCRNet, trainable_parameter_count
-from src.document_architectures import trace
-from src.experiment_config import experiment_config_from_dict, load_experiment_config
-from src.inference import DCEInferenceEngine
+from src.models.architectures import BaseCNNConfig, BreastPCRNet, trainable_parameter_count
+from src.reporting.document_architectures import trace
+from src.training.experiment_config import experiment_config_from_dict, load_experiment_config
+from src.web.inference import DCEInferenceEngine
 
 ROOT = Path(__file__).resolve().parents[1]
 

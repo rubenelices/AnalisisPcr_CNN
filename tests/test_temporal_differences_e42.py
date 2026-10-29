@@ -8,11 +8,11 @@ from PIL import Image
 import pytest
 import torch
 
-from src.architectures import BreastPCRNet, BaseCNNConfig, trainable_parameter_count
-from src.document_architectures import trace
-from src.experiment_config import load_experiment_config, experiment_config_from_dict
-from src.inference import DCEInferenceEngine
-from src.phase_representation import PhaseRepresentation
+from src.models.architectures import BreastPCRNet, BaseCNNConfig, trainable_parameter_count
+from src.reporting.document_architectures import trace
+from src.training.experiment_config import load_experiment_config, experiment_config_from_dict
+from src.web.inference import DCEInferenceEngine
+from src.pipeline.phase_representation import PhaseRepresentation
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / 'configs/experiments/E42_temporal_differences_mac.json'
@@ -145,7 +145,7 @@ def test_new_checkpoint_inference_matches_paths_bytes_and_five_repeated_uploads(
         target = tmp_path/(phase+'.png')
         Image.fromarray(np.full((256,256),value,dtype=np.uint8)).save(target)
         sources[phase] = target
-    from src.data import load_dce_triplet
+    from src.pipeline.data import load_dce_triplet
     image = load_dce_triplet(sources)
     with torch.inference_mode():
         expected = torch.sigmoid(model(image.unsqueeze(0))).item()
@@ -158,7 +158,7 @@ def test_new_checkpoint_inference_matches_paths_bytes_and_five_repeated_uploads(
 
 
 def test_registered_e42_is_complete_from_scientific_not_smoke_metrics():
-    rows=json.loads((ROOT/'experimentos/resultados_registrados.json').read_text())['runs']
+    rows=json.loads((ROOT/'experiments/notes/resultados_registrados.json').read_text())['runs']
     row=next(r for r in rows if r['experiment_id']=='E42_temporal_differences_mac')
     assert row['status']=='complete' and row['source']=='local_artifacts'
     assert row['roc_auc']==pytest.approx(0.6071572580645161)

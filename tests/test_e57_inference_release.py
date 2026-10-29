@@ -8,9 +8,9 @@ import torch
 from PIL import Image
 
 from app import create_app
-from src.inference import DCEInferenceEngine
-from src.patient_feature_model import PatientFeatureNet
-from src.train_patient_features import load_spec
+from src.web.inference import DCEInferenceEngine
+from src.models.patient_feature_model import PatientFeatureNet
+from src.training.train_patient_features import load_spec
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 import numpy as np
 
-from src import web_graficas as W
+from src.web import web_graficas as W
 
 
 def test_reducir_conserva_extremos_y_limita_puntos():

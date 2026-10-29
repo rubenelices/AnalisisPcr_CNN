@@ -6,10 +6,10 @@ import pytest
 import torch
 from torch import nn
 
-from src.architectures import BaseCNNConfig, BreastPCRNet, GlobalAverageMaxPool, trainable_parameter_count
-from src.document_architectures import trace
-from src.experiment_config import load_experiment_config, experiment_config_from_dict
-from src.inference import DCEInferenceEngine
+from src.models.architectures import BaseCNNConfig, BreastPCRNet, GlobalAverageMaxPool, trainable_parameter_count
+from src.reporting.document_architectures import trace
+from src.training.experiment_config import load_experiment_config, experiment_config_from_dict
+from src.web.inference import DCEInferenceEngine
 
 ROOT = Path(__file__).resolve().parents[1]
 CASES = [("E21_group_norm", "group_norm_groups", 294129),

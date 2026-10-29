@@ -1,7 +1,7 @@
 """GeM fijo: álgebra, extremos, gradiente, dtype y estabilidad; no científico."""
 import pytest
 import torch
-from src.power_mean_pool import FixedPowerMeanPool
+from src.models.power_mean_pool import FixedPowerMeanPool
 
 
 def test_formula_shapes_no_parameters_mutation_or_rng():

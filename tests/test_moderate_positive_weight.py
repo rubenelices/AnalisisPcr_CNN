@@ -5,9 +5,9 @@ from pathlib import Path
 import pandas as pd
 import pytest
 import torch
-from src.train_multimodal import load_spec,train_epoch,evaluate
-from src.moderate_positive_weight import build_multimodal_criterion,validate_positive_weight_exponent
-from src.train import build_criterion
+from src.training.train_multimodal import load_spec,train_epoch,evaluate
+from src.training.moderate_positive_weight import build_multimodal_criterion,validate_positive_weight_exponent
+from src.training.train import build_criterion
 
 
 def config(loss='weighted'):
@@ -73,7 +73,7 @@ def test_mps_noninteger_weight_matches_cpu_gradient():
 @pytest.mark.parametrize('device_name',['cpu','mps'])
 def test_actual_cnn_update_with_nonunit_moderate_weight(device_name):
     if device_name=='mps' and not torch.backends.mps.is_available():pytest.skip('MPS unavailable')
-    from src.multimodal_model import MultimodalPCRNet
+    from src.models.multimodal_model import MultimodalPCRNet
     torch.manual_seed(42);cfg=config();device=torch.device(device_name)
     model=MultimodalPCRNet(cfg.model).to(device)
     optimizer=torch.optim.AdamW(model.parameters(),lr=.001,weight_decay=.001)

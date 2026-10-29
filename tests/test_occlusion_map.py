@@ -11,8 +11,8 @@ from PIL import Image
 from torch import nn
 
 from app import create_app
-from src.inference import DCEInferenceEngine
-from src.occlusion_map import occluded_batch, occlusion_map
+from src.web.inference import DCEInferenceEngine
+from src.web.occlusion_map import occluded_batch, occlusion_map
 
 
 class RegionSum(nn.Module):

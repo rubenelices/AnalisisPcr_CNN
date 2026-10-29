@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from src.parallel_context import ParallelContextConv
+from src.models.parallel_context import ParallelContextConv
 
 
 @pytest.mark.parametrize('cin,cout',[(3,16),(16,32),(32,64),(64,128)])

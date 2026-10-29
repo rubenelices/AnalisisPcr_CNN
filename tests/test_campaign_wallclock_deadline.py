@@ -1,6 +1,6 @@
 import threading
 import pytest
-from src.campaign_deadline import WallClockDeadline
+from src.campaigns.campaign_deadline import WallClockDeadline
 
 class FakeEvent:
     def __init__(self,cancel_after_wait=False):

@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 import pytest
 import torch
-from src.clinical_features import ClinicalPreprocessor,load_patient_clinical
-from src.train_multimodal import load_spec
-from src.multimodal_model import MultimodalPCRNet,load_multimodal_checkpoint
+from src.pipeline.clinical_features import ClinicalPreprocessor,load_patient_clinical
+from src.training.train_multimodal import load_spec
+from src.models.multimodal_model import MultimodalPCRNet,load_multimodal_checkpoint
 
-CONFIG='experimentos_datos/D36_edad_menopausia/config.json'
+CONFIG='experiments/D36_age_menopause/run/config.json'
 
 def rows():
     return pd.DataFrame(dict(pid=['a','b','c'],age=[30.,60.,np.nan],menopause=[0.,1.,np.nan]))

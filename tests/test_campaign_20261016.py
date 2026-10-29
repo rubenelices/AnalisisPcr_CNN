@@ -6,7 +6,7 @@ import nbformat
 import pytest
 import torch
 
-from src import campaign_20261016 as campaign
+from src.campaigns import campaign_20261016 as campaign
 import pandas as pd
 
 
@@ -74,11 +74,11 @@ def test_repeated_report_preserves_historical_outputs(tmp_path,monkeypatch):
 
 
 def test_cv_report_rejects_patient_overlap_across_validation_folds(tmp_path,monkeypatch):
-    from src import generalization_panels
+    from src.evaluation import generalization_panels
     monkeypatch.setattr(generalization_panels,'diagnostics',lambda *a:Path('fake.png'))
     monkeypatch.setattr(generalization_panels,'fold_overview',lambda *a:None)
-    from src.metrics import binary_metrics
-    from src.campaign_20261015_fast import enrich
+    from src.evaluation.metrics import binary_metrics
+    from src.campaigns.campaign_20261015_fast import enrich
     monkeypatch.chdir(tmp_path)
     campaign.ROOT.mkdir(parents=True)
     main=campaign.ROOT.parent/'RESULTADOS.ipynb'

@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 import torch
 import pytest
-from src.train_multimodal import load_spec,build_optimizer
-from src.multimodal_model import MultimodalPCRNet
-from src.learning_rate_schedule import LearningRateSchedule
+from src.training.train_multimodal import load_spec,build_optimizer
+from src.models.multimodal_model import MultimodalPCRNet
+from src.training.learning_rate_schedule import LearningRateSchedule
 
 
 def test_original_optimizer_identical():
@@ -17,7 +17,7 @@ def test_original_optimizer_identical():
 
 
 def test_two_groups_cover_all_params_and_preserve_ratio_on_plateau():
-    spec,cfg=load_spec('experimentos_datos/D06_lr_por_rama/config.json')
+    spec,cfg=load_spec('experiments/D06_lr_por_rama/config.json')
     model=MultimodalPCRNet(cfg.model); opt=build_optimizer(model,cfg,spec)
     ids=[id(p) for g in opt.param_groups for p in g['params']]
     assert len(ids)==len(set(ids))==len(list(model.parameters()))

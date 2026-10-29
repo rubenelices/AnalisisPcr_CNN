@@ -1,7 +1,7 @@
 """Álgebra y gradientes de normalización conjunta; no rendimiento ni dataset."""
 import pytest
 import torch
-from src.triplet_standardization import TripletStandardization
+from src.pipeline.triplet_standardization import TripletStandardization
 
 
 def test_default_identity_no_rng_or_parameters():

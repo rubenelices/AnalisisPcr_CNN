@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.new_approach_paired import paired_intervals
+from src.analysis.new_approach_paired import paired_intervals
 
 
 def pairs():

@@ -2,7 +2,7 @@
 import pytest
 import torch
 from torch import nn
-from src.factorized_conv import FactorizedSpatialConv
+from src.models.factorized_conv import FactorizedSpatialConv
 
 
 @pytest.mark.parametrize('channels',[(3,16),(16,16),(16,32),(64,128)])

@@ -8,7 +8,7 @@ import pytest
 import torch
 from torch import nn
 
-from src.sharpness_step import sam_step
+from src.training.sharpness_step import sam_step
 
 
 @pytest.fixture
@@ -51,8 +51,8 @@ def test_mps_zero_radius_matches_adamw_and_preserves_dropout_rng(mps_device):
 
 
 def test_real_reference_cnn_nonzero_sam_updates_finite_on_mps(mps_device):
-    from src.architectures import BreastPCRNet
-    from src.experiment_config import load_experiment_config
+    from src.models.architectures import BreastPCRNet
+    from src.training.experiment_config import load_experiment_config
     model = BreastPCRNet(load_experiment_config('configs/experiments/E19_weight_decay_001_mac.json').model).to(mps_device).train()
     optimizer = torch.optim.AdamW(model.parameters(),lr=0.001,weight_decay=0.001)
     images = torch.rand(4,3,32,32,device=mps_device)

@@ -1,6 +1,6 @@
 import nbformat
 import pandas as pd
-from src.simple_cnn_results import class_table, embed, TAG, equivalent_losses
+from src.reporting.simple_cnn_results import class_table, embed, TAG, equivalent_losses
 
 
 def test_empty_positive_precision_marked_undefined():
@@ -22,7 +22,7 @@ def test_equivalent_bce_and_baseline_fit_only():
 
 def test_embedding_keeps_historical_cells_and_rebases_links(tmp_path,monkeypatch):
     monkeypatch.chdir(tmp_path)
-    main=tmp_path/'experimentos_equilibrados/RESULTADOS.ipynb'
+    main=tmp_path/'experiments/RESULTADOS.ipynb'
     main.parent.mkdir()
     old=nbformat.v4.new_code_cell('print("historical")',execution_count=1,
                                  outputs=[nbformat.v4.new_output('stream',name='stdout',text='historical\n')])

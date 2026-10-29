@@ -4,13 +4,13 @@ import hashlib
 import nbformat
 import pytest
 
-from src.new_approach_results import MARKER, build, write_notebook
+from src.analysis.new_approach_results import MARKER, build, write_notebook
 
 
 def test_refresh_preserves_user_cells_outputs_and_source(tmp_path):
-    source_dir = tmp_path / 'E57'
-    dest = tmp_path / 'nuevo_enfoque'
-    source_dir.mkdir()
+    source_dir = tmp_path / 'experiments/E57_patient_feature_mean_mac/results'
+    dest = tmp_path / 'research'
+    source_dir.mkdir(parents=True)
     dest.mkdir()
     (dest / 'ESTADO.md').write_text('Estado original')
     source = source_dir / 'RESULTADOS.ipynb'
@@ -33,7 +33,7 @@ def test_refresh_preserves_user_cells_outputs_and_source(tmp_path):
     nbformat.validate(result)
     assert [c for c in result.cells if MARKER not in c.metadata] == [note]
     assert 'Estado actualizado' == result.cells[1].source
-    assert result.cells[-2].source == '[Test](../E57/TEST.md) · [Guía](../breastdcedl/GUIA.md)'
+    assert result.cells[-2].source == '[Test](../experiments/E57_patient_feature_mean_mac/results/TEST.md) · [Guía](../breastdcedl/GUIA.md)'
     assert result.cells[-1].outputs == reference.cells[-1].outputs
     assert hashlib.sha256(source.read_bytes()).hexdigest() == before
     # Una segunda actualización no duplica la referencia ni las notas.

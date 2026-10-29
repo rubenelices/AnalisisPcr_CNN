@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import torch
 
-from src.train_p01 import PatientCutSampler, overfit_subset
+from src.training.train_p01 import PatientCutSampler, overfit_subset
 
 
 def rows(n_patients=25, cuts=10):
@@ -60,7 +60,7 @@ def test_overfit_subset_is_balanced_and_deterministic():
 
 
 def test_p02_config_only_adds_augmentation_to_p01():
-    from src.train_p01 import load_config
+    from src.training.train_p01 import load_config
     p01, p02 = load_config(variant='p01'), load_config(variant='p02')
     assert 'augmentation' not in p01
     diff = {k for k in set(p01) | set(p02) if p01.get(k) != p02.get(k)}
@@ -69,7 +69,7 @@ def test_p02_config_only_adds_augmentation_to_p01():
 
 
 def test_sync_augmentation_applies_same_geometry_to_all_phases():
-    from src.train_p01 import SyncFlipAffine
+    from src.training.train_p01 import SyncFlipAffine
     torch.manual_seed(0)
     base = torch.rand(256, 256)
     image = torch.stack([base, base * 0.5, base * 3.0]).float()
@@ -85,7 +85,7 @@ def test_sync_augmentation_applies_same_geometry_to_all_phases():
 
 
 def test_flip_only_is_exact_and_eval_has_no_transform():
-    from src.train_p01 import SyncFlipAffine, train_transform, load_config
+    from src.training.train_p01 import SyncFlipAffine, train_transform, load_config
     image = torch.arange(3 * 256 * 256, dtype=torch.float32).reshape(3, 256, 256)
     aug = SyncFlipAffine(dict(horizontal_flip_probability=1., vertical_flip_probability=0.,
                               max_rotation_degrees=0., max_translation_fraction=0.))
@@ -94,7 +94,7 @@ def test_flip_only_is_exact_and_eval_has_no_transform():
 
 
 def test_gpu_outputs_are_separate_from_mac(tmp_path):
-    from src.train_p01 import run_dirs
+    from src.training.train_p01 import run_dirs
     mac = run_dirs(tmp_path, 'normal', 1, False, 'p02', 'mps')
     gpu = run_dirs(tmp_path, 'normal', 1, False, 'p02', 'cuda')
     smoke = run_dirs(tmp_path, 'weighted', 0, True, 'p02', 'cuda')
@@ -104,8 +104,8 @@ def test_gpu_outputs_are_separate_from_mac(tmp_path):
 
 
 def test_night_check_accepts_identical_protocol(monkeypatch, tmp_path):
-    import src.run_p02_noche as noche
-    from src.new_approach_protocol import ROOT
+    import src.campaigns.run_p02_noche as noche
+    from src.training.new_approach_protocol import ROOT
     monkeypatch.setattr(noche.torch.cuda, 'is_available', lambda: True)
     monkeypatch.setattr(noche.torch.cuda, 'get_device_name', lambda i: 'GPU simulada')
     noche.check(Path(ROOT), tmp_path/'log.txt')
@@ -113,7 +113,7 @@ def test_night_check_accepts_identical_protocol(monkeypatch, tmp_path):
 
 
 def test_p05_config_only_changes_learning_rate_from_p02():
-    from src.train_p01 import load_config
+    from src.training.train_p01 import load_config
     p02, p05 = load_config(variant='p02'), load_config(variant='p05')
     diff = {k for k in set(p02) | set(p05) if p02.get(k) != p05.get(k)}
     # outer_predictions_per_epoch solo guarda predicciones para el análisis secundario.
@@ -123,7 +123,7 @@ def test_p05_config_only_changes_learning_rate_from_p02():
 
 def test_optimizer_reads_config_and_keeps_p01_p02_at_0001():
     import inspect
-    from src.train_p01 import load_config, run
+    from src.training.train_p01 import load_config, run
     assert "lr=float(cfg['learning_rate'])" in inspect.getsource(run)
     for variant in ('p01', 'p02'):
         cfg = load_config(variant=variant)
@@ -132,7 +132,7 @@ def test_optimizer_reads_config_and_keeps_p01_p02_at_0001():
 
 
 def test_seed_default_keeps_old_paths_and_new_seeds_are_separate(tmp_path):
-    from src.train_p01 import run_dirs
+    from src.training.train_p01 import run_dirs
     old = run_dirs(tmp_path, 'normal', 2, False, 'p02', 'cuda')
     assert old == run_dirs(tmp_path, 'normal', 2, False, 'p02', 'cuda', 42)
     assert old[0].name == 'normal_fold_2_seed_42'
@@ -145,8 +145,8 @@ def test_seed_default_keeps_old_paths_and_new_seeds_are_separate(tmp_path):
 
 def test_seed_changes_initial_weights_but_not_partitions():
     import torch
-    from src.train_p01 import new_model, state_sha
-    from src.new_approach_protocol import ROOT
+    from src.training.train_p01 import new_model, state_sha
+    from src.training.new_approach_protocol import ROOT
     a = state_sha(new_model(ROOT, torch.device('cpu'), 42)[2])
     b = state_sha(new_model(ROOT, torch.device('cpu'), 17)[2])
     assert a != b and a == state_sha(new_model(ROOT, torch.device('cpu'))[2])

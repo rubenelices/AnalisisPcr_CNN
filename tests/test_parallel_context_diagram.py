@@ -1,8 +1,8 @@
 """La figura de ramas usa módulos e inputs reales, no lee dataset."""
 from torch import nn
 import pytest
-from src.parallel_context import ParallelContextConv
-from src.parallel_context_diagram import draw_parallel_context_branches
+from src.models.parallel_context import ParallelContextConv
+from src.reporting.parallel_context_diagram import draw_parallel_context_branches
 
 
 def test_synthetic_branches_drawing_and_original_mode_preserved(tmp_path):

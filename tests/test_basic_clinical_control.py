@@ -4,16 +4,16 @@ from pathlib import Path
 import pytest
 import torch
 import pandas as pd
-from src.train_multimodal import load_spec
-from src.clinical_only import ClinicalOnlyPCRNet, load_clinical_only_checkpoint
-from src.clinical_features import ClinicalPreprocessor
+from src.training.train_multimodal import load_spec
+from src.models.clinical_only import ClinicalOnlyPCRNet, load_clinical_only_checkpoint
+from src.pipeline.clinical_features import ClinicalPreprocessor
 
-CONFIG='experimentos_equilibrados/B08_solo_edad_menopausia/config.json'
+CONFIG='experiments/B08_solo_edad_menopausia/config.json'
 
 
 def test_control_preserves_reference_protocol():
     spec,cfg=load_spec(CONFIG)
-    _,ref=load_spec('experimentos_datos/D36_edad_menopausia/config.json')
+    _,ref=load_spec('experiments/D36_age_menopause/run/config.json')
     assert cfg.data==ref.data and cfg.training==ref.training
     assert spec['schema']=='clinical_only_e58_v1'
     assert spec['clinical_input_columns']==spec['active_clinical_columns']==['age','menopause']

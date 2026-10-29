@@ -1,7 +1,7 @@
 """Documentación SiLU en una red sintética, sin integración científica."""
 import torch
 from torch import nn
-from src.document_architectures import trace,visible_diagram_steps
+from src.reporting.document_architectures import trace,visible_diagram_steps
 
 
 def test_synthetic_silu_trace_has_actual_activation_without_changing_mode():

@@ -5,9 +5,9 @@ import pandas as pd
 import pytest
 import torch
 
-from src.clinical_only import ClinicalOnlyPCRNet, ClinicalCutDataset
-from src.clinical_features import ClinicalPreprocessor
-from src.train_multimodal import load_spec
+from src.models.clinical_only import ClinicalOnlyPCRNet, ClinicalCutDataset
+from src.pipeline.clinical_features import ClinicalPreprocessor
+from src.training.train_multimodal import load_spec
 
 
 def test_shapes_count_and_image_independence():
@@ -35,14 +35,14 @@ def test_dataset_repeats_clinic_not_images_or_stats():
 
 
 def test_d08_matches_e58_protocol():
-    spec,cfg=load_spec('experimentos_datos/D08_clinica_sola/config.json')
+    spec,cfg=load_spec('experiments/D08_clinica_sola/config.json')
     base=load_spec('configs/multimodal/E58_clinical_fusion_mac.json')[1]
     assert spec['schema']=='clinical_only_e58_v1'
     assert cfg.data==base.data and cfg.training==base.training and cfg.model==base.model
 
 
 def test_checkpoint_roundtrip(tmp_path):
-    from src.clinical_only import load_clinical_only_checkpoint
+    from src.models.clinical_only import load_clinical_only_checkpoint
     clinical=pd.DataFrame(dict(pid=['a','b'],age=[30.,60.],HR=[0,1],HER2=[1,0],menopause=[0,1]))
     prep=ClinicalPreprocessor.fit(clinical); model=ClinicalOnlyPCRNet().eval()
     path=tmp_path/'checkpoint.pt'

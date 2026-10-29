@@ -4,10 +4,10 @@ from copy import deepcopy
 import pytest
 import torch
 
-from src.architectures import BreastPCRNet
-from src.experiment_config import load_experiment_config
-from src.power_mean_pool import FixedPowerMeanPool
-from src.triplet_standardization import TripletStandardization
+from src.models.architectures import BreastPCRNet
+from src.training.experiment_config import load_experiment_config
+from src.models.power_mean_pool import FixedPowerMeanPool
+from src.pipeline.triplet_standardization import TripletStandardization
 
 
 @pytest.fixture

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.analisis_p07 import SEMILLAS, analizar
+from src.analysis.analisis_p07 import SEMILLAS, analizar
 
 
 def _pacientes(n=300, seed=0):

@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from src.metrics import aggregate_by_patient, binary_metrics
+from src.evaluation.metrics import aggregate_by_patient, binary_metrics
 
 
 @pytest.mark.parametrize("label", [0.7, 1.9, -0.1, np.nan, np.inf])

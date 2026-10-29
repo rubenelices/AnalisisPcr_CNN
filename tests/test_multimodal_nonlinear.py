@@ -4,13 +4,13 @@ import json
 import pytest
 import torch
 
-from src.multimodal_model import MultimodalPCRNet
-from src.train_multimodal import load_spec
+from src.models.multimodal_model import MultimodalPCRNet
+from src.training.train_multimodal import load_spec
 
 
 def test_original_default_preserves_rng_weights():
     from torch import nn
-    from src.architectures import BreastPCRNet
+    from src.models.architectures import BreastPCRNet
     class Legacy(nn.Module):
         def __init__(self,config):
             super().__init__()
@@ -46,8 +46,8 @@ def test_bad_heads_rejected():
 
 
 def test_nonlinear_checkpoint_roundtrip(tmp_path):
-    from src.multimodal_model import load_multimodal_checkpoint
-    from src.clinical_features import ClinicalPreprocessor
+    from src.models.multimodal_model import load_multimodal_checkpoint
+    from src.pipeline.clinical_features import ClinicalPreprocessor
     spec,cfg=load_spec('configs/multimodal/E58_clinical_fusion_mac.json')
     spec=copy.deepcopy(spec);spec['fusion_hidden']=32
     model=MultimodalPCRNet(cfg.model,32).eval()

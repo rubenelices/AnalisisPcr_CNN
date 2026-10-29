@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import torch
-from src.simple_cnn_comparison import config, make_model, load_checkpoint, patient_result
+from src.training.simple_cnn_comparison import config, make_model, load_checkpoint, patient_result
 
 
 @pytest.mark.parametrize('representation', ['raw', 'pre_differences'])
@@ -57,9 +57,9 @@ def test_reject_unknown_representation():
 
 
 def test_balanced_reader_keeps_new_schema_separate(tmp_path):
-    from src.balanced_results import entries
-    from src.clear_results import completed_runs
-    folder=tmp_path/'experimentos_equilibrados/C16_cnn_97809/raw_fold0/resultados'
+    from src.reporting.balanced_results import entries
+    from src.reporting.clear_results import completed_runs
+    folder=tmp_path/'experiments/C16_cnn_97809/raw_fold0/resultados'
     folder.mkdir(parents=True)
     (folder/'config_resolved.json').write_text(json.dumps(config(0,'raw')))
     (folder/'history.csv').write_text('epoch,train_loss\n1,.6\n')

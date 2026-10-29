@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.compare_experiments import compare_experiments, save_comparison
-from src.evaluation import EvaluationConfig, save_evaluation_artifacts
+from src.evaluation.compare_experiments import compare_experiments, save_comparison
+from src.evaluation.evaluation import EvaluationConfig, save_evaluation_artifacts
 
 
 def synthetic_cut_predictions(offset: float = 0.0) -> pd.DataFrame:

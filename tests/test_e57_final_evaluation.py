@@ -3,8 +3,8 @@ import pytest
 import torch
 from torch import nn
 
-from src import evaluate_e57_final as final
-from src.metrics import aggregate_by_patient
+from src.evaluation import evaluate_e57_final as final
+from src.evaluation.metrics import aggregate_by_patient
 
 
 class Loader:

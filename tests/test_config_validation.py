@@ -1,7 +1,7 @@
 """Rechazar errores de configuración antes de cargar datos o reservar GPU."""
 import pytest
 
-from src.experiment_config import DataExperimentConfig, TrainingConfig
+from src.training.experiment_config import DataExperimentConfig, TrainingConfig
 
 
 @pytest.mark.parametrize("field,value", [
