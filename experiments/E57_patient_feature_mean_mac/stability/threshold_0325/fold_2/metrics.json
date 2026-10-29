@@ -1,0 +1,29 @@
+{
+  "schema": "e57_posthoc_decision_v1",
+  "threshold": 0.325,
+  "selection_status": "human_requested_posthoc",
+  "independent_evaluation": false,
+  "test_evaluated": false,
+  "source": "experiments/E57_patient_feature_mean_mac/stability/resultados/fold_2_seed_42",
+  "checkpoint_epoch": 10,
+  "metrics": {
+    "n": 220,
+    "threshold": 0.325,
+    "accuracy": 0.4772727272727273,
+    "balanced_accuracy": 0.610643225602695,
+    "precision": 0.3271604938271605,
+    "sensitivity": 0.8983050847457628,
+    "specificity": 0.32298136645962733,
+    "f1": 0.4796380090497738,
+    "roc_auc": 0.6688072428676702,
+    "pr_auc": 0.4005984435869752,
+    "brier_score": 0.19293654529997428,
+    "confusion_matrix": {
+      "tn": 52,
+      "fp": 109,
+      "fn": 6,
+      "tp": 53
+    },
+    "f1_macro": 0.4772619268993161
+  }
+}

@@ -1,6 +1,6 @@
 # Despliegue
 
-La web completa (interfaz React y API de inferencia) corre en un único contenedor en **Hugging Face Spaces**. El código se descarga de este repositorio de GitHub y los pesos de E57 del repositorio de modelo [RubenElices/BreastDCEDL](https://huggingface.co/RubenElices/BreastDCEDL). Al cargar, el servidor comprueba que el SHA-256 de los pesos coincide con el de [modelo/protocolo_e57.json](../modelo/protocolo_e57.json); si no coincide, no arranca el modelo.
+La web completa (interfaz React y API de inferencia) corre en un único contenedor en **Hugging Face Spaces**. El código se descarga de este repositorio de GitHub y los pesos de E57 del repositorio de modelo [RubenElices/BreastDCEDL](https://huggingface.co/RubenElices/BreastDCEDL). Al cargar, el servidor comprueba que el SHA-256 de los pesos coincide con el de [model/protocolo_e57.json](../model/protocolo_e57.json); si no coincide, no arranca el modelo.
 
 ## Hugging Face Space
 

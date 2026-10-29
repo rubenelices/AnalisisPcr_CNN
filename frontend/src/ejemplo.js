@@ -5,11 +5,11 @@ const cohortes = { spy1: 'I-SPY1', spy2: 'I-SPY2', duke: 'Duke' }
 const ejemplo = (id, paciente, posicion, cohorte, medias) => ({
   id, paciente, posicion, cohorte: cohortes[cohorte],
   fases: [
-    { id: 'PRE', cuando: 'antes del contraste', src: `/ejemplo/${id}/PRE.png`, media: medias[0] },
-    { id: 'EARLY', cuando: 'primera fase tras el contraste', src: `/ejemplo/${id}/EARLY.png`, media: medias[1] },
-    { id: 'LATE', cuando: 'fase tardía', src: `/ejemplo/${id}/LATE.png`, media: medias[2] },
+    { id: 'PRE', cuando: 'antes del contraste', src: `/examples/${id}/PRE.png`, media: medias[0] },
+    { id: 'EARLY', cuando: 'primera fase tras el contraste', src: `/examples/${id}/EARLY.png`, media: medias[1] },
+    { id: 'LATE', cuando: 'fase tardía', src: `/examples/${id}/LATE.png`, media: medias[2] },
   ],
-  realce: `/ejemplo/${id}/REALCE.png`,
+  realce: `/examples/${id}/REALCE.png`,
 })
 
 export const EJEMPLOS = [

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 // Cifras y datos de gráficas generados a partir de los resultados guardados:
-//   /resultados/resumen.json  ← python -m src.web_resultados
-//   /resultados/graficas.json ← python -m src.web_graficas
+//   /resultados/resumen.json  ← python -m src.web.web_resultados
+//   /resultados/graficas.json ← python -m src.web.web_graficas
 // Cada fichero se pide una vez y se comparte entre secciones.
 const promesas = {}
 
@@ -18,8 +18,8 @@ function useJson(url) {
   return datos
 }
 
-export const useResumen = () => useJson('/resultados/resumen.json')
-export const useGraficas = () => useJson('/resultados/graficas.json')
+export const useResumen = () => useJson('/results/resumen.json')
+export const useGraficas = () => useJson('/results/graficas.json')
 
 // Números con coma decimal, como en el resto del trabajo.
 export const fmt = (v, d = 2) => v.toFixed(d).replace('.', ',')

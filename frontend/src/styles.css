@@ -1038,7 +1038,7 @@ body { background: var(--papel); }
 .pin .zz-visual { max-height: calc(100svh - 190px); overflow: hidden; }
 .pin .zz-num { top: -0.55em; }
 
-/* Tabla de experimentos (último paso del recorrido de Inicio). */
+/* Tabla de experiments (último paso del recorrido de Inicio). */
 .zz-fila.ancha { grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.5fr); }
 .zz-fila.ancha.invertida { grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.62fr); }
 .pin .zz-visual:has(.vis-experimentos) { overflow: auto; }

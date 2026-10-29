@@ -243,8 +243,7 @@ mlruns/
 outputs/
 artifacts/models/
 reports/
-experimentos_datos/**/resultados/
-experimentos_equilibrados/**/resultados/
+experiments/**/resultados/
 *.pt
 *.pth
 *.ckpt
@@ -261,67 +260,10 @@ tmp/
 *.log
 .DS_Store
 
-# Campaña local15octubre: auditoría y salidas regenerables (sin datos en índice).
-experimentos_equilibrados/campana_20261015/historical_sha256.json
-experimentos_equilibrados/campana_20261015/state.json
-experimentos_equilibrados/campana_20261015/current.json
-experimentos_equilibrados/campana_20261015/selection.json
-experimentos_equilibrados/campana_20261015/queue_complete.json
-experimentos_equilibrados/campana_20261015/cv_summary.json
-experimentos_equilibrados/campana_20261015/resumen_ejecuciones.csv
-experimentos_equilibrados/campana_20261015/heldout_*.csv
-experimentos_equilibrados/campana_20261015/analysis/
-experimentos_equilibrados/campana_20261015/nested_*.json
-experimentos_equilibrados/campana_20261015/secondary_fixed/
-experimentos_equilibrados/campana_20261015/bn_fixed/
-experimentos_equilibrados/campana_20261015/ensemble_fixed/
-experimentos_equilibrados/campana_20261015/followup_*.json
-experimentos_equilibrados/campana_20261015/reference_complete.json
-experimentos_equilibrados/campana_20261015/extension_*.json
-experimentos_equilibrados/campana_20261015/additional_implementation.json
+# Resultados por paciente de los experimentos: regenerables y locales.
+experiments/**/smoke/
+experiments/**/*.csv
 
-# Contraste C16: datos por paciente, auditorías y tablas regenerables locales.
-experimentos_equilibrados/C16_cnn_97809/heldout_*.csv
-experimentos_equilibrados/C16_cnn_97809/*sha256.json
-experimentos_equilibrados/C16_cnn_97809/active_process.json
-experimentos_equilibrados/C16_cnn_97809/started.json
-experimentos_equilibrados/C16_cnn_97809/complete.json
-experimentos_equilibrados/C16_cnn_97809/report_state.json
-experimentos_equilibrados/C16_cnn_97809/paired_comparison.json
-experimentos_equilibrados/C16_cnn_97809/fold_metrics.csv
-experimentos_equilibrados/C16_cnn_97809/comparison.csv
-experimentos_equilibrados/C16_cnn_97809/*audit*.json
-experimentos_equilibrados/C16_cnn_97809/quota.json
-experimentos_equilibrados/C16_cnn_97809/cohort_metrics.csv
-experimentos_equilibrados/C16_cnn_97809/matrices_comparadas.png
-
-# C17: ejecución manual del estudiante; resultados regenerables locales.
-experimentos_equilibrados/C17_receta_publicada/smoke_resultados/
-experimentos_equilibrados/C17_receta_publicada/active_process.json
-experimentos_equilibrados/C17_receta_publicada/resumen.csv
-experimentos_equilibrados/C17_receta_publicada/verification.json
-
-# Campaña local16octubre: artefactos regenerables.
-experimentos_equilibrados/campana_20261016/smoke/
-experimentos_equilibrados/campana_20261016/*sha256.json
-experimentos_equilibrados/campana_20261016/active_process.json
-experimentos_equilibrados/campana_20261016/resumen.csv
-experimentos_equilibrados/campana_20261016/*quota*.json
-
-experimentos_equilibrados/campana_20261016/source_snapshots/
-experimentos_equilibrados/campana_20261016/fixed_epoch10/
-experimentos_equilibrados/campana_20261016/*_patients.csv
-experimentos_equilibrados/campana_20261016/*_summary.json
-experimentos_equilibrados/campana_20261016/cohort_diagnostic.csv
-
-experimentos_equilibrados/campana_20261016/bn_fixed_epoch10/
-experimentos_equilibrados/campana_20261016/*.csv
-experimentos_equilibrados/campana_20261016/*_audit.json
-experimentos_equilibrados/campana_20261016/software_verification.json
-
-# Resultados por paciente y smokes de E57_estabilidad: regenerables, locales.
-experimentos_equilibrados/E57_estabilidad/smoke/
-experimentos_equilibrados/E57_estabilidad/**/*.csv
 # Paquetes de resultados traídos de la GPU.
 resultados_p02_gpu_*.tar.gz
 
