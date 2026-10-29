@@ -65,6 +65,19 @@ def histograma(y, p, umbral, cajas=20):
                 pcr=np.histogram(p[y == 1], bordes)[0].tolist(), umbral=umbral)
 
 
+def umbrales(y, p, hasta=0.7, paso=0.005):
+    """Matriz de confusión por paciente en cada umbral (p ≥ umbral es pCR, como en la web): [umbral, VP, FP, VN, FN].
+
+    Es para el deslizador del laboratorio: enseña el compromiso entre sensibilidad y especificidad. El umbral
+    entregado (0,325) se fijó con la validación; mover el deslizador sobre el test no elige nada."""
+    y, p = np.asarray(y).astype(bool), np.asarray(p)
+    filas = []
+    for u in np.round(np.arange(0, hasta + paso / 2, paso), 3):
+        si = p >= u
+        filas.append([float(u), int((si & y).sum()), int((si & ~y).sum()), int((~si & ~y).sum()), int((~si & y).sum())])
+    return filas
+
+
 def referencia(prevalencia):
     fpr, tpr, rec, prec, ap = cv_report.referencia(prevalencia=prevalencia)
     return dict(auc=cv_report.AUC_REFERENCIA, ap=_r(ap), roc=reducir(fpr, tpr, 60), pr=reducir(rec, prec, 60))
@@ -88,6 +101,7 @@ def _e57():
                                    corte=dict(auc=_r(t['cut_metrics_secondary']['roc_auc']), n=t['cut_metrics_secondary']['n']),
                                    brier=_r(t['patient_metrics_primary']['brier_score']),
                                    ece=_r(t['calibration']['expected_calibration_error'])),
+        umbrales=dict(validacion=umbrales(val.target.to_numpy(), val.probability.to_numpy()), test=umbrales(yt, pt)),
         cv_anidada=E57_CV_ANIDADA,
         referencia_validacion=referencia(float(val.target.mean())),
         referencia_test=referencia(float(yt.mean())),

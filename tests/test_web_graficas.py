@@ -21,3 +21,13 @@ def test_curvas_y_calibracion_con_datos_sinteticos():
     assert sum(n for _, _, n in cal) == 200
     h = W.histograma(y, p, 0.325)
     assert sum(h['sin_pcr']) + sum(h['pcr']) == 200
+
+
+def test_umbrales_cuentan_cada_paciente_una_vez():
+    y = np.array([0, 0, 1, 1, 1])
+    p = np.array([0.1, 0.4, 0.3, 0.5, 0.05])
+    filas = W.umbrales(y, p, hasta=0.5, paso=0.1)
+    assert [f[0] for f in filas] == [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+    assert all(sum(f[1:]) == 5 for f in filas)
+    assert filas[0][1:] == [3, 2, 0, 0]          # umbral 0: todo pCR
+    assert filas[3][1:] == [2, 1, 1, 1]          # p ≥ 0,3: VP 0,3 y 0,5; FP 0,4

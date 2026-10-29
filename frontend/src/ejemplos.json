@@ -1,0 +1,110 @@
+[
+ {
+  "id": "ISPY1_1001_z016",
+  "paciente": "ISPY1_1001",
+  "posicion": "z016",
+  "cohorte": "spy1",
+  "pcr": 0,
+  "medias": [
+   0.123,
+   0.155,
+   0.164
+  ]
+ },
+ {
+  "id": "ISPY2-923968_z035",
+  "paciente": "ISPY2-923968",
+  "posicion": "z035",
+  "cohorte": "spy2",
+  "pcr": 1,
+  "medias": [
+   0.124,
+   0.194,
+   0.206
+  ]
+ },
+ {
+  "id": "Breast_MRI_592_z034",
+  "paciente": "Breast_MRI_592",
+  "posicion": "z034",
+  "cohorte": "duke",
+  "pcr": 0,
+  "medias": [
+   0.117,
+   0.141,
+   0.159
+  ]
+ },
+ {
+  "id": "Breast_MRI_082_z019",
+  "paciente": "Breast_MRI_082",
+  "posicion": "z019",
+  "cohorte": "duke",
+  "pcr": 0,
+  "medias": [
+   0.169,
+   0.277,
+   0.266
+  ]
+ },
+ {
+  "id": "Breast_MRI_539_z032",
+  "paciente": "Breast_MRI_539",
+  "posicion": "z032",
+  "cohorte": "duke",
+  "pcr": 1,
+  "medias": [
+   0.077,
+   0.109,
+   0.129
+  ]
+ },
+ {
+  "id": "ISPY1_1114_z014",
+  "paciente": "ISPY1_1114",
+  "posicion": "z014",
+  "cohorte": "spy1",
+  "pcr": 0,
+  "medias": [
+   0.145,
+   0.214,
+   0.248
+  ]
+ },
+ {
+  "id": "ISPY1_1075_z017",
+  "paciente": "ISPY1_1075",
+  "posicion": "z017",
+  "cohorte": "spy1",
+  "pcr": 1,
+  "medias": [
+   0.125,
+   0.164,
+   0.17
+  ]
+ },
+ {
+  "id": "ACRIN-6698-856159_z004",
+  "paciente": "ACRIN-6698-856159",
+  "posicion": "z004",
+  "cohorte": "spy2",
+  "pcr": 0,
+  "medias": [
+   0.209,
+   0.3,
+   0.289
+  ]
+ },
+ {
+  "id": "ISPY2-410083_z017",
+  "paciente": "ISPY2-410083",
+  "posicion": "z017",
+  "cohorte": "spy2",
+  "pcr": 1,
+  "medias": [
+   0.118,
+   0.157,
+   0.204
+  ]
+ }
+]
