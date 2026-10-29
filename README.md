@@ -2,7 +2,7 @@
 
 Proyecto de Aprendizaje Automático (Universidad Alfonso X el Sabio, 2026–2027). Estima la probabilidad de **respuesta patológica completa (pCR)** a la quimioterapia neoadyuvante en cáncer de mama a partir de las tres fases de una DCE-MRI previa al tratamiento (PRE, EARLY y LATE), con una CNN 2D diseñada y entrenada desde cero en PyTorch, sin transfer learning ni pesos preentrenados.
 
-**Pesos del modelo:** [huggingface.co/RubenElices/BreastDCEDL](https://huggingface.co/RubenElices/BreastDCEDL) · **Resultados:** [research/RESULTADOS.ipynb](research/RESULTADOS.ipynb) · **Presentación:** [docs/presentation](docs/presentation/presentacion.pdf)
+**Demo web:** [rubenelices-pcr-demo.hf.space](https://rubenelices-pcr-demo.hf.space) · **Pesos del modelo:** [huggingface.co/RubenElices/BreastDCEDL](https://huggingface.co/RubenElices/BreastDCEDL) · **Resultados:** [research/RESULTADOS.ipynb](research/RESULTADOS.ipynb) · **Presentación:** [docs/presentation](docs/presentation/presentacion.pdf)
 
 ## Resultado
 
@@ -40,7 +40,7 @@ La señal que la red extrae de la imagen no supera de forma demostrable a saber 
 ├── model/                 protocolo congelado del modelo entregado (umbral, agregación, SHA-256)
 ├── frontend/              interfaz React
 ├── web/                   demo HTML anterior (servida en /demo)
-├── deploy/                despliegue en Hugging Face Spaces
+├── deploy/                despliegue en Hugging Face Spaces (preparar_space.py monta y sube la web)
 └── docs/presentation/     presentación
 ```
 
@@ -65,7 +65,7 @@ npm --prefix frontend ci && npm --prefix frontend run build
 BREAST_PCR_HF_REPO=RubenElices/BreastDCEDL python app.py
 ```
 
-Abre `http://127.0.0.1:8000`. Si el checkpoint no está en `checkpoints/`, se descarga del repositorio de Hugging Face y se verifica su SHA-256 contra [model/protocolo_e57.json](model/protocolo_e57.json). El servidor no guarda las imágenes recibidas. Despliegue: [deploy/README.md](deploy/README.md).
+Abre `http://127.0.0.1:8000`. Si el checkpoint no está en `checkpoints/`, se descarga del repositorio de Hugging Face y se verifica su SHA-256 contra [model/protocolo_e57.json](model/protocolo_e57.json). El servidor no guarda las imágenes recibidas. La web pública está en [rubenelices-pcr-demo.hf.space](https://rubenelices-pcr-demo.hf.space); cómo se despliega: [deploy/README.md](deploy/README.md).
 
 ## Protocolo experimental
 

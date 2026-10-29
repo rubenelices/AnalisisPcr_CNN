@@ -1,0 +1,9 @@
+torch==2.11.0
+numpy>=2.0
+pandas>=2.2
+Pillow>=11.0
+scikit-learn>=1.5
+psutil>=6.0
+Flask>=3.0
+waitress>=3.0
+huggingface_hub>=0.25
