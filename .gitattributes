@@ -13,3 +13,6 @@
 *.jpg binary
 *.jpeg binary
 *.pdf binary
+
+# Los notebooks son resultados generados, no código: fuera de las estadísticas de lenguajes de GitHub.
+*.ipynb linguist-generated
