@@ -33,7 +33,23 @@ function formularioFases(archivos) {
 export const predecir = (archivos) => pedir('/api/predict', { method: 'POST', body: formularioFases(archivos) })
 
 // Mapa de oclusión del mismo corte: el servidor tapa cada cuadro y vuelve a predecir.
-export const mapaOclusion = (archivos) => pedir('/api/occlusion', { method: 'POST', body: formularioFases(archivos) })
+// opciones: { patch: 8 | 16 | 32, fase: '' (las tres) | 'PRE' | 'EARLY' | 'LATE' }
+export function mapaOclusion(archivos, { patch = 16, fase = '' } = {}) {
+  const formulario = formularioFases(archivos)
+  formulario.append('patch', String(patch))
+  if (fase) formulario.append('fase', fase)
+  return pedir('/api/occlusion', { method: 'POST', body: formulario })
+}
+
+// Laboratorio: el servidor aplica los ajustes (aumentos del entrenamiento o sondas sobre las fases) y vuelve
+// a predecir. Devuelve la probabilidad y las tres fases tal como las recibe la red.
+export function laboratorio(archivos, ajustes) {
+  const formulario = formularioFases(archivos)
+  for (const [clave, valor] of Object.entries(ajustes)) {
+    formulario.append(clave, typeof valor === 'boolean' ? (valor ? '1' : '0') : String(valor))
+  }
+  return pedir('/api/laboratorio', { method: 'POST', body: formulario })
+}
 
 // pCR real del corte según el CSV de datos, o null si el corte no está en él.
 export async function etiquetaReal(clave) {

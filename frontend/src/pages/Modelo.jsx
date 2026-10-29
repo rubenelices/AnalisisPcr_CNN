@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CAPAS } from '../components/Arquitectura.jsx'
 import { ArquitecturaInteractiva } from '../components/ArquitecturaInteractiva.jsx'
-import { Barras, COLOR, Diagonal, Figura, Grafico, Horizontal, Linea, Puntos, Texto, Vertical } from '../components/Graficas.jsx'
+import { Barras, COLOR, Diagonal, Figura, Grafico, Horizontal, Linea, Texto, Vertical } from '../components/Graficas.jsx'
 import { Revelar } from '../components/Movimiento.jsx'
 import { useCanales } from '../canales.js'
 import { EJEMPLOS } from '../ejemplo.js'
@@ -48,23 +48,6 @@ function Canales() {
 }
 
 const epocas = (n) => Array.from({ length: Math.ceil(n / 4) + 1 }, (_, i) => Math.max(1, i * 4)).filter((v) => v <= n)
-
-function Histograma({ h }) {
-  const b = h.bordes
-  const paso = b[1] - b[0]
-  const max = Math.max(...h.sin_pcr, ...h.pcr)
-  const tope = Math.ceil(max / 5) * 5
-  return (
-    <Grafico x={[b[0], b.at(-1)]} y={[0, tope]} ticksX={b.filter((_, i) => i % 4 === 0)} ticksY={Array.from({ length: tope / 5 + 1 }, (_, i) => i * 5)}
-      fmtX={(v) => fmt(v, 2)} fmtY={(v) => v} etiquetaX="Probabilidad predicha" etiquetaY="Pacientes" descripcion="Histograma de probabilidades por clase real">
-      <Barras ancho={paso * 0.42} datos={[
-        ...h.sin_pcr.map((v, i) => ({ x: b[i] + paso * 0.28, y: v, color: COLOR.train })),
-        ...h.pcr.map((v, i) => ({ x: b[i] + paso * 0.72, y: v, color: COLOR.acento })),
-      ]} />
-      <Vertical x={h.umbral} color={COLOR.test} etiqueta="umbral" />
-    </Grafico>
-  )
-}
 
 function GraficasEntrenamiento({ g, r }) {
   const e = g.e57
@@ -174,28 +157,6 @@ function GraficasEntrenamiento({ g, r }) {
         </div>
       </Figura>
 
-      <Figura titulo="Calibración en test"
-        leyenda={[{ texto: 'Grupos de unas 22 pacientes (8 cuantiles)', color: COLOR.test }, { texto: 'Calibración perfecta', color: COLOR.azar, tipo: 'discontinua' }]}
-        explicacion={<>
-          <p>Cada punto agrupa pacientes con probabilidades parecidas y compara la probabilidad media que dio el modelo con la proporción real de pCR del grupo.</p>
-          <p>Casi todas las probabilidades caen entre 0,22 y 0,35: el modelo apenas se compromete, y dentro de ese margen estrecho la proporción real de pCR casi no cambia. Brier {fmt(e.test.brier, 3)}; error de calibración esperado {fmt(e.test.ece, 3)}.</p>
-        </>}>
-        <Grafico x={[0, 0.7]} y={[0, 0.7]} ticksX={[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]} ticksY={[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]} alto={420}
-          etiquetaX="Probabilidad media predicha" etiquetaY="Proporción real de pCR" descripcion="Calibración de las probabilidades en test">
-          <Diagonal />
-          <Linea datos={e.test.calibracion.map(([p, y]) => [p, y])} color={COLOR.test} grosor={1.6} />
-          <Puntos datos={e.test.calibracion.map(([p, y]) => [p, y])} color={COLOR.test} />
-        </Grafico>
-      </Figura>
-
-      <Figura titulo="Probabilidades por clase real (test)"
-        leyenda={[{ texto: 'Pacientes sin pCR', color: COLOR.train }, { texto: 'Pacientes con pCR', color: COLOR.acento }, { texto: `Umbral ${fmt(e.umbral, 3)}`, color: COLOR.test, tipo: 'discontinua' }]}
-        explicacion={<>
-          <p>Si el modelo separara bien, las barras rosas estarían a la derecha del umbral y las azules a la izquierda. Las dos distribuciones se solapan casi por completo.</p>
-          <p>Eso es lo que resume un AUC de {fmt(t.auc, 3)}: las pacientes con pCR tienden a recibir algo más de probabilidad, con mucha superposición.</p>
-        </>}>
-        <Histograma h={e.test.histograma} />
-      </Figura>
     </div>
   )
 }

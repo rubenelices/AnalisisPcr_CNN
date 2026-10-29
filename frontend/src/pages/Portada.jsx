@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Boton } from '../components/Boton.jsx'
 import { IconoAvanzar } from '../components/Iconos.jsx'
-import { COLOR, Grafico, Horizontal, Linea, Puntos, Texto, Vertical } from '../components/Graficas.jsx'
+import { COLOR, Grafico, Horizontal, Linea, Vertical } from '../components/Graficas.jsx'
 import { Contador, EXPO, Revelar } from '../components/Movimiento.jsx'
 import { useCanales } from '../canales.js'
 import { EJEMPLOS } from '../ejemplo.js'
@@ -200,49 +200,6 @@ function VisAumento() {
   )
 }
 
-function VisValidacion({ r }) {
-  const n = r.cv_p02.normal, w = r.cv_p02.weighted
-  return (
-    <div className="vis vis-grafico">
-      <Grafico x={[0.4, 2.6]} y={[0.4, 0.65]} ticksX={[1, 2]} ticksY={[0.4, 0.45, 0.5, 0.55, 0.6, 0.65]} fmtX={(v) => (v === 1 ? 'BCE normal' : 'BCE ponderada')} fmtY={(v) => fmt(v, 2)}
-        etiquetaX="" etiquetaY="AUC exterior" descripcion="AUC exterior de los 5 folds con BCE normal y ponderada">
-        <Horizontal y={0.5} etiqueta="azar" />
-        <Horizontal y={0.55} color={COLOR.acento} tipo="puntos" etiqueta="listón para sustituir a E57 (0,55)" lado="izquierda" />
-        <Puntos datos={n.folds.map((f, i) => [0.82 + i * 0.09, f.exterior])} color={COLOR.train} r={6} />
-        {w && <Puntos datos={w.folds.map((f, i) => [1.82 + i * 0.09, f.exterior])} color={COLOR.valid} r={6} />}
-        <Texto x={1} y={0.42}>{`conjunta ${fmt(n.auc, 3)}`}</Texto>
-        {w && <Texto x={2} y={0.42}>{`conjunta ${fmt(w.auc, 3)}`}</Texto>}
-      </Grafico>
-      <p className="vis-pie">Un punto por fold: 219 pacientes no vistas cada uno, 1.097 en total.</p>
-    </div>
-  )
-}
-
-function VisEntrega({ r }) {
-  const t = r.test_e57
-  const pos = (v) => `${((v - 0.4) / 0.4) * 100}%`
-  return (
-    <div className="vis vis-entrega">
-      <ol className="vis-reglas">
-        <li><span>AUC conjunta de P02 ≥ 0,55</span><b className="no">0,532: no</b></li>
-        <li><span>Ponderada claramente mejor</span><b className="no">IC incluye 0: no</b></li>
-        <li><span>Modelo entregado</span><b>E57</b></li>
-      </ol>
-      <div className="vis-test">
-        <p className="vis-titulo">Test público · {t.pacientes} pacientes · una evaluación</p>
-        <p className="vis-test-cifra"><Contador valor={t.auc} decimales={3} /> <span>AUC</span></p>
-        <div className="vis-ic">
-          <span className="vis-ic-banda" style={{ left: pos(t.ic95[0]), width: `calc(${pos(t.ic95[1])} - ${pos(t.ic95[0])})` }} />
-          <span className="vis-ic-punto" style={{ left: pos(t.auc) }} />
-          <span className="vis-ic-azar" style={{ left: pos(0.5) }} />
-        </div>
-        <div className="vis-ic-eje"><span>0,4</span><span>0,5</span><span>0,6</span><span>0,7</span><span>0,8</span></div>
-        <p className="vis-pie">Intervalo del 95 %: {fmt(t.ic95[0], 3)} a {fmt(t.ic95[1], 3)}.</p>
-      </div>
-    </div>
-  )
-}
-
 // Lectura de cada experimento, con sus cifras del historial (src/web/web_resultados.py).
 const LECTURAS = {
   C17_normal: (e) => `Pico en la época ${e.mejor_epoca}; el entrenamiento supera a la validación en ${fmt(e.brecha, 2)}.`,
@@ -314,18 +271,12 @@ const PASOS = [
   { id: 'recetas', fase: 'Diagnóstico y mejora', titulo: 'P01 y P02: lotes y aumento de datos', Vis: VisAumento, completa: true, textoAncho: true, texto: [
     'P01 forma cada lote con 10 pacientes y 2 cortes de cada una: la red ya puede reducir su error de entrenamiento, algo que con la receta de E57 no lograba ni con 40 pacientes.',
     'P02 añade aumentos geométricos sincronizados para memorizar menos: la misma transformación en las tres fases, para que el realce no se falsee. Frenó la memorización, pero no mejoró el AUC con pacientes nuevas.'] },
-  { id: 'validacion', fase: 'Evaluación y entrega', titulo: 'Validación cruzada en GPU', Vis: VisValidacion, texto: [
-    'P02 se entrenó en los 5 folds con cada pérdida, en la GPU de la universidad: 10 entrenamientos.',
-    'Con pacientes no vistas, BCE normal da AUC 0,532 y ponderada 0,500. La red aprende, pero lo aprendido se traslada poco.'] },
-  { id: 'entrega', fase: 'Evaluación y entrega', titulo: 'Reglas fijadas antes y un único test', Vis: VisEntrega, texto: [
-    'Las reglas de elección se registraron antes de ver la validación cruzada. P02 no llega al listón de 0,55, así que se entrega E57.',
-    'E57 tiene su única evaluación en test: AUC 0,573. Un resultado modesto, medido sin tocar el test para elegir nada.'] },
-  { id: 'experiments', fase: 'Evaluación y entrega', titulo: 'Diez experimentos del camino', Vis: VisExperimentos, ancha: true, texto: [
+  { id: 'experimentos', fase: 'Experimentos', titulo: 'Diez experimentos del camino', Vis: VisExperimentos, ancha: true, texto: [
     'De los casi 200 experimentos del historial, diez que enseñan algo distinto: la referencia inicial, cambios de normalización y de muestreo, la pérdida ponderada, controles con datos clínicos y un entrenamiento que memoriza.',
     'Todos los picos están medidos sobre la propia validación, así que son optimistas. Los que usan datos clínicos no son comparables con los de solo imagen: el modelo entregado no los usa.'] },
 ]
 
-const FASES = ['Datos', 'Modelo', 'Diagnóstico y mejora', 'Evaluación y entrega']
+const FASES = ['Datos', 'Modelo', 'Diagnóstico y mejora', 'Experimentos']
 
 function Pipeline({ onIr }) {
   const reducir = useReducedMotion()

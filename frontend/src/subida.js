@@ -44,6 +44,12 @@ function mapaRealce(pre, early, ancho, alto) {
   return c.toDataURL('image/png')
 }
 
+// Realce EARLY − PRE a partir de dos imágenes ya cargables (URL o data URL), con la misma paleta.
+export async function realceDeUrls(pre, early) {
+  const [a, b] = await Promise.all([cargarImagen(pre), cargarImagen(early)])
+  return mapaRealce(pixeles(a), pixeles(b), a.naturalWidth, a.naturalHeight)
+}
+
 export async function validarFases(lista) {
   const archivos = Array.from(lista)
   const errores = []

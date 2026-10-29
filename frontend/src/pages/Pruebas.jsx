@@ -5,6 +5,7 @@ import { IconoAvanzar, IconoEjemplo, IconoSubir } from '../components/Iconos.jsx
 import { SALIDA } from '../components/Movimiento.jsx'
 import { archivosDeArrastre, faltan, faseDe, FASES_ORDEN, tablaTexto } from '../lote.js'
 import { fmt, fmtProb } from '../datos.js'
+import { EJEMPLOS } from '../ejemplo.js'
 
 function Zona({ onArchivos, ocupado }) {
   const input = useRef(null)
@@ -141,7 +142,7 @@ export function Pruebas({ lote, sueltos, modelo, ocupado, onArchivos, onEjemplos
         <div className="pruebas-barra">
           <h2>Resultados {lote.length > 0 && <span>{listos.length} de {lote.length} cortes · {listos.filter((f) => f.resultado.predicted_class === 1).length} clasificados como pCR{conEtiqueta.length > 0 && ` · ${conEtiqueta.filter((f) => f.resultado.predicted_class === f.real).length} de ${conEtiqueta.length} correctos`}</span>}</h2>
           <div className="pruebas-botones">
-            <Boton variante="secundario" fondo="claro" icono={<IconoEjemplo />} onClick={onEjemplos} disabled={ocupado}>Probar con los 3 ejemplos</Boton>
+            <Boton variante="secundario" fondo="claro" icono={<IconoEjemplo />} onClick={onEjemplos} disabled={ocupado}>Probar con los {EJEMPLOS.length} ejemplos</Boton>
             {listos.length > 0 && <Boton variante="secundario" fondo="claro" onClick={copiar}>{copiado ? 'Copiado' : 'Copiar tabla'}</Boton>}
             {listos.length > 0 && <Boton variante="secundario" fondo="claro" onClick={descargar}>Descargar</Boton>}
             {lote.length > 0 && <Boton variante="texto" fondo="claro" onClick={onVaciar} disabled={ocupado}>Vaciar</Boton>}

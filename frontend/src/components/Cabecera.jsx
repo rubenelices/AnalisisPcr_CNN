@@ -12,7 +12,7 @@ import { archivosDeArrastre } from '../lote.js'
 
 export const RUTAS = [
   { id: '', nombre: 'Inicio' },
-  { id: 'prediccion', nombre: 'Predicción' },
+  { id: 'laboratorio', nombre: 'Laboratorio' },
   { id: 'modelo', nombre: 'Modelo' },
   { id: 'resultados', nombre: 'Resultados' },
   { id: 'pruebas', nombre: 'Pruebas' },
@@ -64,7 +64,7 @@ function UltimoResultado({ resultado, ir }) {
   return (
     <AnimatePresence mode="popLayout">
       {resultado.estado !== 'error' && (
-        <motion.button key={resultado.clave} className="mando-resultado" onClick={() => ir('prediccion')}
+        <motion.button key={resultado.clave} className="mando-resultado" onClick={() => ir('laboratorio')}
           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
           <span className="mando-resultado-etiqueta">Último resultado</span>
           <span className="mando-resultado-valor">
@@ -100,8 +100,8 @@ function Secciones({ ruta, ir, flotante }) {
 const TITULARES = {
   '': ['Aprendizaje automático · CNN entrenada desde cero', 'Respuesta al tratamiento neoadyuvante',
     'Probabilidad de respuesta patológica completa a partir de tres fases de un corte de resonancia de mama.'],
-  prediccion: ['Predicción · un corte, tres fases', 'La probabilidad de un corte',
-    'El modelo entregado, E57, da la probabilidad de pCR de un corte y la compara con su umbral.'],
+  laboratorio: ['Laboratorio · análisis de un corte', 'Cómo responde el modelo',
+    'Elige un corte, aplícale las transformaciones del entrenamiento, ajusta el umbral y comprueba qué zonas modifican la probabilidad que da E57.'],
   modelo: ['Modelo · E57', 'Una CNN propia, capa a capa',
     '298.161 parámetros entrenados desde cero: la arquitectura, el entrenamiento y cómo se eligió.'],
   resultados: ['Resultados · evaluación honesta', 'Lo que dicen las cifras',
@@ -109,7 +109,7 @@ const TITULARES = {
   pruebas: ['Pruebas · para la defensa', 'Carga tus propios cortes',
     'Suelta las tres fases de uno o varios cortes y compara la predicción con la etiqueta real.'],
 }
-const TEXTO_DESLIZA = { '': 'el trabajo', prediccion: 'la predicción', modelo: 'el modelo', resultados: 'los resultados', pruebas: 'las pruebas' }
+const TEXTO_DESLIZA = { '': 'el trabajo', laboratorio: 'el laboratorio', modelo: 'el modelo', resultados: 'los resultados', pruebas: 'las pruebas' }
 
 // La pantalla de una estación de radiología, sin imagen: anotaciones en las esquinas (cada una lleva a
 // su sección), reglas en los bordes y la escala de color del realce. Es funcional: se pueden soltar aquí imágenes o carpetas y se procesan en Pruebas.

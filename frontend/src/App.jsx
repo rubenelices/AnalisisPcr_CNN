@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion, useScroll } from 'framer-mot
 import { Cabecera, RUTAS } from './components/Cabecera.jsx'
 import { Pie } from './components/Pie.jsx'
 import { Portada } from './pages/Portada.jsx'
-import { Prediccion } from './pages/Prediccion.jsx'
+import { Laboratorio } from './pages/Laboratorio.jsx'
 import { Modelo } from './pages/Modelo.jsx'
 import { Resultados } from './pages/Resultados.jsx'
 import { Pruebas } from './pages/Pruebas.jsx'
@@ -12,10 +12,10 @@ import { validarFases } from './subida.js'
 import { agrupar, unirFases } from './lote.js'
 import { archivosDeEjemplo, etiquetaReal, obtenerModelo, predecir } from './api.js'
 
-// Rutas con almohadilla (#/prediccion): funcionan en cualquier alojamiento estático
-// y el botón atrás del navegador vuelve a la sección anterior.
+// Rutas con almohadilla (#/laboratorio): funcionan en cualquier alojamiento estático
+// y el botón atrás del navegador vuelve a la sección anterior. #/prediccion era el nombre anterior.
 const leerRuta = () => {
-  const r = window.location.hash.replace(/^#\/?/, '')
+  const r = window.location.hash.replace(/^#\/?/, '').replace(/^prediccion$/, 'laboratorio')
   return RUTAS.some((x) => x.id === r) ? r : ''
 }
 
@@ -48,7 +48,7 @@ function useRevelarAlHacerScroll(clave, reducir) {
 
 export default function App() {
   const [ruta, setRuta] = useState(leerRuta)
-  // Lo que hay en el visor de Predicción: un ejemplo o tres fases subidas.
+  // El corte del Laboratorio: un ejemplo o tres fases subidas.
   const [entrada, setEntrada] = useState({ tipo: 'ejemplo', id: EJEMPLOS[0].id })
   // Ficha del modelo cargado en el servidor y resultado de la última predicción.
   const [modelo, setModelo] = useState({ estado: 'cargando' })
@@ -101,7 +101,22 @@ export default function App() {
     cargarEjemplo(EJEMPLOS[0].id, false)
   }, [cargarEjemplo])
 
-  const elegirEjemplo = (id) => { setEntrada({ tipo: 'ejemplo', id }); ir('prediccion'); cargarEjemplo(id) }
+  const elegirEjemplo = (id) => { setEntrada({ tipo: 'ejemplo', id }); ir('laboratorio'); cargarEjemplo(id) }
+
+  // Tres fases subidas desde el Laboratorio (ya validadas en el navegador): se predicen como cualquier corte.
+  const abrirSubida = async (v) => {
+    const clave = v.nombre
+    setEntrada({ tipo: 'subida', nombre: clave, fases: v.fases, realce: v.realce, archivos: v.archivos })
+    ultima.current = clave
+    setResultado({ estado: 'cargando', clave })
+    try {
+      const r = await predecir(v.archivos)
+      if (ultima.current === clave) setResultado({ estado: 'listo', clave, ...r })
+      registrar(clave, r, { tipo: 'laboratorio' }, v.fases.map((f) => f.src))
+    } catch (e) {
+      if (ultima.current === clave) setResultado({ estado: 'error', clave, error: e.message })
+    }
+  }
 
   // Cada corte del lote se valida y se predice en orden, uno detrás de otro. Las fases pueden llegar sueltas y en
   // varios envíos: un corte incompleto queda «esperando» y, cuando llega la fase que falta, se calcula.
@@ -157,12 +172,13 @@ export default function App() {
     setEntrada({ tipo: 'subida', nombre: fila.clave, fases: fila.fases, realce: fila.realce, archivos: fila.archivos })
     ultima.current = fila.clave
     setResultado({ estado: 'listo', clave: fila.clave, ...fila.resultado })
-    ir('prediccion')
+    ir('laboratorio')
   }
 
   // Abrir una predicción del historial: los ejemplos se recargan; las subidas se toman de Pruebas.
   const abrirHistorial = (h) => {
     if (h.origen.tipo === 'ejemplo') return elegirEjemplo(h.clave)
+    if (h.origen.tipo === 'laboratorio') return entrada.nombre === h.clave ? ir('laboratorio') : undefined
     const fila = lote.find((f) => f.id === h.origen.id && f.estado === 'listo')
     if (fila) verDetalle(fila)
     else ir('pruebas')
@@ -172,7 +188,7 @@ export default function App() {
 
   let pagina
   if (ruta === '') pagina = <Portada ir={ir} />
-  else if (ruta === 'prediccion') pagina = <Prediccion entrada={entrada} ejemplo={ejemplo} errores={[]} resultado={resultado} modelo={modelo} />
+  else if (ruta === 'laboratorio') pagina = <Laboratorio entrada={entrada} ejemplo={ejemplo} resultado={resultado} modelo={modelo} onEjemplo={elegirEjemplo} onSubida={abrirSubida} ir={ir} />
   else if (ruta === 'modelo') pagina = <Modelo modelo={modelo} />
   else if (ruta === 'resultados') pagina = <Resultados />
   else pagina = (
