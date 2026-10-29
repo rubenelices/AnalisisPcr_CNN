@@ -198,7 +198,7 @@
       ]
     }
   },
-  "experiments": [
+  "experimentos": [
     {
       "id": "C17_normal",
       "nombre": "Referencia inicial",

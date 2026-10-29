@@ -177,9 +177,9 @@ def _aligned_predictions(
     if left["patient_id"].tolist() != right["patient_id"].tolist():
         raise ValueError("Los experimentos no evaluaron exactamente las mismas pacientes")
     if not np.array_equal(left["target"].to_numpy(), right["target"].to_numpy()):
-        raise ValueError("Las etiquetas no coinciden entre experiments")
+        raise ValueError("Las etiquetas no coinciden entre experimentos")
     if not np.array_equal(left["fold"].to_numpy(), right["fold"].to_numpy()):
-        raise ValueError("Los folds no coinciden entre experiments")
+        raise ValueError("Los folds no coinciden entre experimentos")
     return left, right
 
 
