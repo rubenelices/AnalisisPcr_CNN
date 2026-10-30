@@ -103,29 +103,28 @@ function rango(valores, paso = 0.05) {
   return [[lo, hi], ticks]
 }
 
-function CurvasPorEpoca({ k, g, r, fold }) {
+// Curvas por época de una validación cruzada (N01 o P02). `nombre` va en los títulos; `textos` explica la vista
+// de los 5 folds; con un fold elegido, el texto sale de su resumen.
+function CurvasPorEpoca({ historias, folds, nombre, textos, fold, r, g }) {
   const todos = fold === 'todos'
-  const series = g.p02[k].filter((f) => todos || f.fold === fold)
-  const resumen = r.cv_p02[k].folds.find((f) => f.fold === fold)
+  const series = historias.filter((f) => todos || f.fold === fold)
+  const resumen = folds.find((f) => f.fold === fold)
   const maxEpoca = Math.max(...series.flatMap((f) => f.historia.map((h) => h.epoch)))
   const ticksX = [1, 5, 10, 15, 20, 25, 30].filter((t) => t <= Math.max(maxEpoca, 5))
   const xs = [1, todos ? 30 : Math.max(maxEpoca, 5)]
-  const bces = series.flatMap((f) => f.historia.flatMap((h) => [h.fit_bce, h.inner_bce]))
+  const bces = series.flatMap((f) => f.historia.flatMap((h) => [h.fit_bce, h.inner_bce])).concat(g.bce_constante)
   const [yBce, ticksBce] = rango(bces, 0.05)
   const grosor = todos ? 1.6 : 2.4
-  const nombre = PERDIDAS[k]
+  const donde = todos ? '5 folds' : `fold ${fold}`
   return (
     <div className="curvas-fold">
-      <Figura titulo={todos ? `AUC por época, 5 folds · BCE ${nombre}` : `AUC por época, fold ${fold} · BCE ${nombre}`}
+      <Figura titulo={`AUC por época, ${donde} · ${nombre}`}
         leyenda={[{ texto: 'Entrenamiento (FIT)', color: COLOR.train }, { texto: 'Validación interna', color: COLOR.valid },
           ...(todos ? [{ texto: 'Buen modelo teórico', color: COLOR.ref, tipo: 'puntos' }] : [{ texto: 'AUC exterior (pacientes no vistas)', color: COLOR.test, tipo: 'discontinua' }])]}
-        explicacion={<p>{todos
-          ? (k === 'normal'
-            ? 'Con lotes de 10 pacientes y aumento sincronizado (P02), la red sí aprende: el AUC de entrenamiento sube con las épocas. El de validación no lo acompaña, y en tres folds la validación eligió la época 1 o 2.'
-            : 'Con la pérdida ponderada pasa lo mismo. En dos folds la validación interna eligió una de las tres primeras épocas, antes de que la red aprendiera casi nada.')
+        explicacion={<p>{todos ? textos.auc
           : `La validación interna eligió la época ${resumen.epoca} (AUC interna ${fmt(resumen.interna, 3)}). Con ese modelo, las ${r.particiones.folds[fold].pacientes} pacientes del fold exterior dan ${fmt(resumen.exterior, 3)}. Entrenó ${maxEpoca} épocas: la paciencia corta 10 épocas después de la elegida.`}</p>}>
         <Grafico x={xs} y={[0.4, 0.9]} ticksX={ticksX} ticksY={[0.4, 0.5, 0.6, 0.7, 0.8, 0.9]} fmtX={(v) => v}
-          etiquetaX="Época" etiquetaY="AUC por paciente" descripcion={`AUC por época con BCE ${nombre}, ${todos ? 'los 5 folds' : `fold ${fold}`}`}>
+          etiquetaX="Época" etiquetaY="AUC por paciente" descripcion={`AUC por época, ${donde}, ${nombre}`}>
           {todos && <Horizontal y={0.8} color={COLOR.ref} tipo="puntos" />}
           <Horizontal y={0.5} />
           {!todos && <Horizontal y={resumen.exterior} color={COLOR.test} etiqueta={`exterior ${fmt(resumen.exterior, 3)}`} />}
@@ -134,19 +133,91 @@ function CurvasPorEpoca({ k, g, r, fold }) {
           {series.map((f, i) => <Linea key={`v${fold}-${f.fold}`} datos={f.historia.map((h) => [h.epoch, h.inner_auc])} color={COLOR.valid} grosor={grosor} puntos={!todos} retraso={0.3 + i * 0.08} />)}
         </Grafico>
       </Figura>
-      <Figura titulo={todos ? `BCE por época, 5 folds · BCE ${nombre}` : `BCE por época, fold ${fold} · BCE ${nombre}`}
-        leyenda={[{ texto: 'Entrenamiento (FIT)', color: COLOR.train }, { texto: 'Validación interna', color: COLOR.valid }]}
-        explicacion={<p>{k === 'normal'
-          ? 'Pérdida BCE sin ponderar en ambas curvas. Si la de entrenamiento baja y la de validación sube, la red se ajusta a sus pacientes sin generalizar.'
-          : 'Las dos curvas usan la BCE sin ponderar para que sean comparables con la normal; el entrenamiento optimizó la ponderada.'}</p>}>
+      <Figura titulo={`BCE por época, ${donde} · ${nombre}`}
+        leyenda={[{ texto: 'Entrenamiento (FIT)', color: COLOR.train }, { texto: 'Validación interna', color: COLOR.valid },
+          { texto: `Predictor constante (${fmt(g.bce_constante, 3)})`, color: COLOR.azar, tipo: 'discontinua' }]}
+        explicacion={<p>{textos.bce}</p>}>
         <Grafico x={xs} y={yBce} ticksX={ticksX} ticksY={ticksBce} fmtX={(v) => v} fmtY={(v) => fmt(v, 2)}
-          etiquetaX="Época" etiquetaY="BCE" descripcion={`BCE por época con BCE ${nombre}, ${todos ? 'los 5 folds' : `fold ${fold}`}`}>
+          etiquetaX="Época" etiquetaY="BCE" descripcion={`BCE por época, ${donde}, ${nombre}`}>
+          <Horizontal y={g.bce_constante} />
           {!todos && <Vertical x={resumen.epoca} etiqueta={`época ${resumen.epoca}`} />}
           {series.map((f, i) => <Linea key={`tb${fold}-${f.fold}`} datos={f.historia.map((h) => [h.epoch, h.fit_bce])} color={COLOR.train} grosor={grosor} puntos={!todos} retraso={i * 0.08} />)}
           {series.map((f, i) => <Linea key={`vb${fold}-${f.fold}`} datos={f.historia.map((h) => [h.epoch, h.inner_bce])} color={COLOR.valid} grosor={grosor} puntos={!todos} retraso={0.3 + i * 0.08} />)}
         </Grafico>
       </Figura>
     </div>
+  )
+}
+
+const TEXTOS_P02 = {
+  normal: {
+    auc: 'Con lotes de 10 pacientes y aumento sincronizado (P02), la red sí aprende: el AUC de entrenamiento sube con las épocas. El de validación no lo acompaña, y en tres folds la validación eligió la época 1 o 2.',
+    bce: 'Pérdida BCE sin ponderar en ambas curvas. La de entrenamiento baja de la línea del predictor constante y la de validación sube: la red se ajusta a sus pacientes sin generalizar.',
+  },
+  weighted: {
+    auc: 'Con la pérdida ponderada pasa lo mismo. En dos folds la validación interna eligió una de las tres primeras épocas, antes de que la red aprendiera casi nada.',
+    bce: 'Las dos curvas usan la BCE sin ponderar para que sean comparables con la normal; el entrenamiento optimizó la ponderada.',
+  },
+}
+
+const TEXTOS_N01 = {
+  auc: 'Con la receta de E57 (2 pacientes por lote, sin aumento), el AUC de entrenamiento no pasa de 0,65 en ningún fold: la red apenas distingue a las pacientes con las que entrena. La validación interna oscila alrededor de 0,6 por azar.',
+  bce: 'La BCE de entrenamiento se queda pegada a la del predictor constante, que responde siempre la proporción de pCR. Es el síntoma que llevó al diagnóstico: con lotes de 2 pacientes, BatchNorm impedía aprender diferencias entre ellas.',
+}
+
+// Validación cruzada de la receta del modelo entregado (N01: E57 con el protocolo FIT / interna / exterior).
+function ValidacionE57({ r, g }) {
+  const v = r.cv_n01
+  const [fold, setFold] = useState('todos')
+  const datos = v.folds.map((f, i) => ({ x: i + 1, y: f.exterior, color: fold === 'todos' || fold === f.fold ? COLOR.test : `${COLOR.test}40` }))
+  return (
+    <>
+      <div className="dos-columnas">
+        <Figura titulo="AUC de pacientes no vistas, fold a fold · receta de E57"
+          leyenda={[{ texto: `Exterior (conjunta ${fmt(v.auc, 3)})`, color: COLOR.test }, { texto: 'Azar', color: COLOR.azar, tipo: 'discontinua' }]}
+          explicacion={<p>Cada fold deja fuera unas 219 pacientes que no intervienen ni en el entrenamiento ni en la elección de época y umbral. El fold 0 dio 0,617, la cifra exterior más alta del proyecto; los otros cuatro quedaron entre 0,445 y 0,542.</p>}>
+          <Grafico x={[0.4, 5.6]} y={[0.4, 0.65]} ticksX={[1, 2, 3, 4, 5]} ticksY={[0.4, 0.45, 0.5, 0.55, 0.6, 0.65]} fmtX={(x) => `fold ${x - 1}`} fmtY={(y) => fmt(y, 2)}
+            etiquetaX="" etiquetaY="AUC exterior" descripcion="AUC exterior por fold con la receta de E57">
+            <Horizontal y={0.5} etiqueta="azar" lado="izquierda" />
+            <Barras datos={datos.map((d) => ({ ...d, y: Math.max(d.y, 0.4) }))} ancho={0.5} />
+            {datos.map((d, i) => <Texto key={i} x={d.x} y={d.y} dy={-6} clase="valor-grafico pequeno">{fmt(d.y, 2)}</Texto>)}
+          </Grafico>
+        </Figura>
+        <div className="texto-columna">
+          <h3 className="subtitulo">Qué dice de E57</h3>
+          <p>
+            Sobre las {mil(v.pacientes)} pacientes de entrenamiento, cada una predicha por el modelo que no la vio, la receta de E57
+            da un AUC de <strong>{fmt(v.auc, 3)}</strong> (IC95 {fmt(v.ic95[0], 3)}–{fmt(v.ic95[1], 3)}) por paciente y {fmt(v.auc_corte, 3)} por
+            corte. Saber solo la cohorte de la paciente da {fmt(v.cohorte_base, 3)}: la diferencia es {fmt(v.menos_cohorte.diferencia, 3)}{' '}
+            [{fmt(v.menos_cohorte.ic95[0], 3)}, {fmt(v.menos_cohorte.ic95[1], 3)}], así que la receta no supera a la cohorte.
+          </p>
+          <table className="tabla compacta tabla-folds">
+            <thead><tr><th>Fold</th><th className="num">Época</th><th className="num">FIT</th><th className="num">Interna</th><th className="num">Exterior</th></tr></thead>
+            <tbody>
+              {v.folds.map((f) => (
+                <tr key={f.fold} className={fold === f.fold ? 'activa' : ''} onClick={() => setFold(fold === f.fold ? 'todos' : f.fold)} title={`Ver las curvas del fold ${f.fold}`}>
+                  <td>{f.fold}</td><td className="num">{f.epoca}</td><td className="num">{fmt(f.fit, 3)}</td>
+                  <td className="num">{fmt(f.interna, 3)}</td><td className="num">{fmt(f.exterior, 3)}</td></tr>
+              ))}
+              <tr className="total"><td>Conjunta</td><td /><td /><td /><td className="num">{fmt(v.auc, 3)}</td></tr>
+            </tbody>
+          </table>
+          <p className="nota-pie">FIT e interna: AUC en la época elegida. Exterior: pacientes no vistas. Pulsa una fila para ver sus curvas.</p>
+        </div>
+      </div>
+
+      {g.n01?.normal && (
+        <>
+          <div className="curvas-cabeza">
+            <h3 className="subtitulo">Curvas por época</h3>
+            <SelectorFold folds={v.folds.map((f) => f.fold)} valor={fold} onCambio={setFold} />
+          </div>
+          <div className="curvas-columnas curvas-una">
+            <CurvasPorEpoca historias={g.n01.normal} folds={v.folds} nombre="receta de E57" textos={TEXTOS_N01} fold={fold} r={r} g={g} />
+          </div>
+        </>
+      )}
+    </>
   )
 }
 
@@ -203,7 +274,8 @@ function ValidacionCruzada({ r, g }) {
             <SelectorFold folds={n.folds.map((f) => f.fold)} valor={fold} onCambio={setFold} />
           </div>
           <div className="dos-columnas curvas-columnas">
-            {['normal', 'weighted'].filter((k) => g.p02[k] && r.cv_p02[k]).map((k) => <CurvasPorEpoca key={k} k={k} g={g} r={r} fold={fold} />)}
+            {['normal', 'weighted'].filter((k) => g.p02[k] && r.cv_p02[k]).map((k) => (
+              <CurvasPorEpoca key={k} historias={g.p02[k]} folds={r.cv_p02[k].folds} nombre={`P02 · BCE ${PERDIDAS[k]}`} textos={TEXTOS_P02[k]} fold={fold} r={r} g={g} />))}
           </div>
         </>
       )}
@@ -211,7 +283,7 @@ function ValidacionCruzada({ r, g }) {
   )
 }
 
-function MatrizConjunta({ m, test }) {
+function MatrizConjunta({ m, test, receta }) {
   const celdas = [
     ['tn', 'Verdadero negativo', 'sin pCR, dicho sin pCR', 'bien'], ['fp', 'Falso positivo', 'sin pCR, dicho pCR', 'mal'],
     ['fn', 'Falso negativo', 'pCR, dicho sin pCR', 'mal'], ['tp', 'Verdadero positivo', 'pCR, dicho pCR', 'bien'],
@@ -236,7 +308,7 @@ function MatrizConjunta({ m, test }) {
         <p className="parrafo">
           Son los <strong>5 folds juntos, no un fold</strong>: cada una de las {mil(m.pacientes)} pacientes de entrenamiento aparece
           una sola vez, predicha por el modelo del fold en que quedó fuera y con el umbral interno de ese fold. Es la
-          evaluación honesta de la receta P02 con BCE normal.
+          evaluación honesta de {receta}.
         </p>
         <p className="parrafo">
           Sensibilidad <strong>{fmt(m.sensibilidad, 3)}</strong> ({m.tp} de {m.pcr} pCR detectadas) y especificidad{' '}
@@ -244,8 +316,7 @@ function MatrizConjunta({ m, test }) {
           acierta poco en ambas direcciones.
         </p>
         <p className="nota-pie">
-          El test público ({test.pacientes} pacientes) es aparte: pertenece a E57, el modelo entregado, y no interviene en esta
-          matriz.
+          El test público ({test.pacientes} pacientes) es aparte y no interviene en esta matriz.
         </p>
       </div>
     </div>
@@ -268,17 +339,127 @@ const FIGURAS_NOTEBOOK = [
   ['calibracion.png', 'Calibración de la validación cruzada'],
 ]
 
+// BCE normal frente a ponderada con la receta de E57 (fold 0 de N01, mismas pacientes y mismos pesos iniciales).
+function PerdidasE57({ p, cv }) {
+  const n = p.normal, w = p.weighted
+  const pct = (v) => `${fmt(v * 100, 0)} %`
+  const filas = [
+    ['pos_weight', fmt(n.pos_weight, 2), fmt(w.pos_weight, 2)],
+    ['Época elegida en la validación interna', n.epoca, w.epoca],
+    ['AUC de la validación interna', fmt(n.interna, 3), fmt(w.interna, 3)],
+    ['AUC exterior (219 pacientes no vistas)', fmt(n.exterior, 3), fmt(w.exterior, 3)],
+    ['Sensibilidad con umbral 0,5', pct(n.sensibilidad_05), pct(w.sensibilidad_05)],
+    ['Especificidad con umbral 0,5', pct(n.especificidad_05), pct(w.especificidad_05)],
+    [`Umbral elegido en la validación interna`, fmt(n.umbral, 3), fmt(w.umbral, 3)],
+    ['Sensibilidad con ese umbral', pct(n.sensibilidad), pct(w.sensibilidad)],
+    ['Brier (calibración; menor es mejor)', fmt(n.brier, 3), fmt(w.brier, 3)],
+  ]
+  return (
+    <div className="dos-columnas">
+      <Revelar>
+        <table className="tabla compacta">
+          <thead><tr><th>Fold 0 · receta de E57</th><th className="num">Normal</th><th className="num">Ponderada</th></tr></thead>
+          <tbody>{filas.map(([nombre, a, b]) => <tr key={nombre}><td>{nombre}</td><td className="num">{a}</td><td className="num">{b}</td></tr>)}</tbody>
+        </table>
+      </Revelar>
+      <div className="texto-columna">
+        <p className="parrafo">
+          La ponderada multiplica por {fmt(w.pos_weight, 2)} el error en las pacientes con pCR, la clase minoritaria. Eso
+          empuja todas las probabilidades hacia arriba: con el umbral 0,5 la normal no detecta ninguna pCR
+          ({pct(n.sensibilidad_05)}) y la ponderada detecta el {pct(w.sensibilidad_05)}, a cambio de más falsos positivos.
+        </p>
+        <p className="parrafo">
+          Pero ese efecto lo consigue igual un umbral más bajo: con el umbral elegido en la validación interna, la normal
+          llega al {pct(n.sensibilidad)} de sensibilidad. La ponderada no ordena mejor a las pacientes (AUC exterior{' '}
+          {fmt(w.exterior, 3)} frente a {fmt(n.exterior, 3)}) y sus probabilidades están peor calibradas (Brier más alto).
+          La normal, que es la que usa el modelo entregado, queda por delante en este fold.
+        </p>
+        <p className="nota-pie">
+          Con esta receta la red apenas aprende, así que solo se entrenaron las dos pérdidas en el fold 0. La comparación en
+          los 5 folds se hizo con la receta corregida (P02): normal {fmt(cv.normal.auc, 3)} frente a ponderada{' '}
+          {fmt(cv.weighted.auc, 3)}, sin diferencia demostrada. Está en el <button type="button" className="boton-texto" onClick={() => document.getElementById('p02')?.scrollIntoView({ behavior: 'smooth' })}>anexo de P02</button>.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// P02 en un desplegable cerrado: el contexto, la comparación de pérdidas del enunciado y sus figuras.
+function AnexoP02({ r, g, t }) {
+  const [abierto, setAbierto] = useState(false)
+  const normal = r.cv_p02.normal
+  return (
+    <section className="papel-seccion anexo-p02" id="p02">
+      <h2 className="titulo-seccion">Anexo: P02 y la comparación de pérdidas</h2>
+      <p className="parrafo">
+        P02 es la receta corregida de E57. Con ella se repitió en los 5 folds la comparación entre BCE normal y ponderada,
+        y se comprobó si corregir la receta mejoraba la generalización.
+      </p>
+      <button type="button" className="boton boton-secundario sobre-claro anexo-boton" aria-expanded={abierto} aria-controls="anexo-p02-cuerpo"
+        onClick={() => setAbierto((a) => !a)}>
+        {abierto ? 'Ocultar P02' : 'Ver P02: receta corregida y BCE normal frente a ponderada'}
+        <span className={abierto ? 'anexo-flecha abierta' : 'anexo-flecha'} aria-hidden="true">⌄</span>
+      </button>
+      {abierto && (
+        <div id="anexo-p02-cuerpo" className="anexo-cuerpo">
+          <h3 className="subtitulo">Por qué con P02 y no con E57</h3>
+          <p className="parrafo">
+            Con la receta de E57 (2 pacientes por lote) la red apenas aprende: su BCE de entrenamiento se queda en la del
+            predictor constante. Comparar dos pérdidas en un modelo que no aprende dice poco, así que con E57 las dos se
+            entrenaron solo en el fold 0 (apartado anterior). La comparación en los 5 folds se hizo con
+            <strong> P02</strong>: la misma red con lotes de 10 pacientes × 2 cortes, con los que BatchNorm ya permite aprender,
+            y aumento geométrico sincronizado para memorizar menos. Se entrenaron los 5 folds con cada pérdida en la GPU de la
+            universidad.
+          </p>
+          <p className="parrafo">
+            P02 habría sustituido a E57 si su AUC conjunta llegaba a 0,55, una regla fijada antes de ver los resultados. Se
+            quedó en {fmt(normal.auc, 3)}, así que el modelo entregado sigue siendo E57.
+          </p>
+          <ValidacionCruzada r={r} g={g} />
+
+          {normal.matriz_conjunta && (
+            <>
+              <h3 className="subtitulo anexo-subtitulo">Matriz de confusión de la validación cruzada (P02 normal)</h3>
+              <MatrizConjunta m={normal.matriz_conjunta} test={t} receta="la receta P02 con BCE normal" />
+            </>
+          )}
+
+          <h3 className="subtitulo anexo-subtitulo">Por cohorte (P02 normal)</h3>
+          <div className="dos-columnas">
+            <Cohortes cohortes={normal.cohortes} />
+            <p className="parrafo">
+              P02 ordena algo mejor en I-SPY, pero en Duke ordena al revés: sus imágenes se adquirieron con otro protocolo y
+              sus cortes se seleccionaron con otro criterio. Lo que la red aprende en I-SPY no se traslada a Duke.
+            </p>
+          </div>
+
+          <h3 className="subtitulo anexo-subtitulo">Figuras del notebook</h3>
+          <p className="parrafo">Las mismas figuras que en el notebook de resultados del repositorio. Se abren a tamaño completo.</p>
+          <div className="galeria">
+            {FIGURAS_NOTEBOOK.map(([f, nombre]) => (
+              <a key={f} className="galeria-item" href={`/results/${f}`} target="_blank" rel="noreferrer">
+                <img src={`/results/${f}`} alt={nombre} loading="lazy" />
+                <span>{nombre}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
 export function Resultados() {
   const r = useResumen(), g = useGraficas()
   if (r.estado === 'error' || g.estado === 'error') return <section className="papel-seccion"><h1 className="titulo-pagina">Resultados</h1><p>Faltan los datos: genera python -m src.web.web_resultados y python -m src.web.web_graficas.</p></section>
   if (r.estado !== 'listo' || g.estado !== 'listo') return <section className="papel-seccion"><h1 className="titulo-pagina">Resultados</h1><p>Cargando…</p></section>
 
-  const t = r.test_e57, normal = r.cv_p02.normal, ponderada = r.cv_p02.weighted
+  const t = r.test_e57, n01 = r.cv_n01, normal = r.cv_p02.normal
   const filas = [
     { nombre: 'Pico de validación de E57', detalle: 'fold 0; la época se eligió mirando estas mismas pacientes', valor: r.picos_e57.fold0, tipo: 'optimista' },
     { nombre: 'Media de los picos de E57', detalle: '5 folds; misma forma de elegir', valor: r.picos_e57.media, tipo: 'optimista' },
-    normal && { nombre: 'Validación cruzada P02, BCE normal', detalle: `${normal.pacientes} pacientes no vistas`, valor: normal.auc, ic: normal.ic95, tipo: 'honesta' },
-    ponderada && { nombre: 'Validación cruzada P02, BCE ponderada', detalle: `las mismas ${ponderada.pacientes} pacientes`, valor: ponderada.auc, ic: ponderada.ic95, tipo: 'honesta' },
+    n01?.auc && { nombre: 'Validación cruzada, receta de E57', detalle: `${mil(n01.pacientes)} pacientes no vistas`, valor: n01.auc, ic: n01.ic95, tipo: 'honesta' },
+    n01?.auc && { nombre: 'Solo la cohorte de la paciente', detalle: 'línea base, sin imagen', valor: n01.cohorte_base, tipo: 'honesta' },
     { nombre: 'Test público, E57', detalle: `${t.pacientes} pacientes, evaluado una sola vez`, valor: t.auc, ic: t.ic95, tipo: 'final' },
   ].filter(Boolean)
 
@@ -308,36 +489,49 @@ export function Resultados() {
         <Revelar><EscalaMedidas filas={filas} referencia={r.referencia.auc} /></Revelar>
       </section>
 
-      <section className="papel-seccion">
-        <h2 className="titulo-seccion">Validación cruzada de 5 folds (P02)</h2>
-        <p className="parrafo">
-          La receta corregida (P02: 10 pacientes por lote y aumento geométrico sincronizado) se evaluó en los 5 folds del
-          profesor, una vez con cada pérdida, en la GPU de la universidad. Es la comparación BCE normal frente a ponderada que
-          pide el enunciado.
-        </p>
-        <ValidacionCruzada r={r} g={g} />
-      </section>
-
-      {normal?.matriz_conjunta && (
+      {n01?.auc && (
         <section className="papel-seccion">
-          <h2 className="titulo-seccion">Matriz de confusión de la validación cruzada (P02 normal)</h2>
-          <MatrizConjunta m={normal.matriz_conjunta} test={t} />
+          <h2 className="titulo-seccion">Validación cruzada de E57</h2>
+          <p className="parrafo">
+            El test de E57 son solo {t.pacientes} pacientes. Para medir su receta con más pacientes se repitió en los 5 folds
+            del profesor con la misma red, los mismos lotes (2 pacientes con todos sus cortes, sin aumento) y BCE normal,
+            separando en cada fold el entrenamiento (FIT), la validación interna que elige época y umbral, y el fold exterior,
+            que solo se evalúa. Es el experimento N01.
+          </p>
+
+          <ValidacionE57 r={r} g={g} />
         </section>
       )}
 
-      {normal && (
+      {n01?.matriz_conjunta && (
+        <section className="papel-seccion">
+          <h2 className="titulo-seccion">Matriz de confusión de la validación cruzada</h2>
+          <MatrizConjunta m={n01.matriz_conjunta} test={t} receta="la receta de E57" />
+        </section>
+      )}
+
+      {n01?.perdidas_fold0?.weighted && r.cv_p02.weighted && (
+        <section className="papel-seccion">
+          <h2 className="titulo-seccion">BCE normal frente a ponderada</h2>
+          <PerdidasE57 p={n01.perdidas_fold0} cv={r.cv_p02} />
+        </section>
+      )}
+
+      {n01?.cohortes && (
         <section className="papel-seccion">
           <h2 className="titulo-seccion">Por cohorte</h2>
           <div className="dos-columnas">
-            <Revelar><Cohortes cohortes={normal.cohortes} /></Revelar>
+            <Revelar><Cohortes cohortes={n01.cohortes} /></Revelar>
             <p className="parrafo">
-              AUC de la validación cruzada (BCE normal) separada por cohorte. En Duke el modelo ordena al revés: sus imágenes
-              se adquirieron con otro protocolo y sus cortes se seleccionaron con otro criterio. Lo que la red aprende en I-SPY
-              no se traslada, lo que indica que parte de la señal depende de la cohorte y no solo de la biología.
+              AUC de la validación cruzada de E57 separada por cohorte. Ninguna se aleja del azar, y saber solo de qué
+              cohorte viene la paciente ya da {fmt(n01.cohorte_base, 3)}: las tres cohortes tienen proporciones de pCR y
+              criterios de selección de cortes distintos, y esa diferencia pesa tanto como la imagen.
             </p>
           </div>
         </section>
       )}
+
+      {normal && <AnexoP02 r={r} g={g} t={t} />}
 
       <section className="papel-seccion">
         <h2 className="titulo-seccion">Decisión de entrega</h2>
@@ -358,23 +552,11 @@ export function Resultados() {
         <ol className="conclusiones">
           <Revelar as="li" orden={0}><strong>El modelo inicial no aprendía.</strong> Con lotes de 2 pacientes, BatchNorm impedía aprender diferencias entre pacientes; con 10 por lote, la red aprende.</Revelar>
           <Revelar as="li" orden={1}><strong>Aprender no es generalizar.</strong> Lo que la red aprende se traslada poco a pacientes nuevas, incluso con aumento de datos; la BCE ponderada no lo mejora.</Revelar>
-          <Revelar as="li" orden={2}><strong>La cohorte pesa.</strong> En Duke el modelo ordena al revés: con solo imagen y 1.097 pacientes de tres cohortes, la señal es débil y en parte específica de cada cohorte.</Revelar>
-          <Revelar as="li" orden={3}><strong>La medida honesta coincide.</strong> El pico de validación (0,67) prometía más que el test (0,57); la validación cruzada (0,53) lo anticipaba.</Revelar>
+          <Revelar as="li" orden={2}><strong>La cohorte pesa.</strong> Saber solo de qué cohorte viene la paciente ya da {n01?.cohorte_base ? fmt(n01.cohorte_base, 2) : '—'}, y ninguna receta lo supera de forma demostrable: con solo imagen y 1.097 pacientes de tres cohortes, la señal es débil y en parte específica de cada cohorte.</Revelar>
+          <Revelar as="li" orden={3}><strong>Las cifras honestas están cerca del azar.</strong> El pico de validación de E57 (0,67) prometía más que su test (0,57), y la validación cruzada de su receta ({n01?.auc ? fmt(n01.auc, 2) : '—'}) indica que parte de ese 0,57 es suerte de un test de {t.pacientes} pacientes: su intervalo incluye 0,5.</Revelar>
         </ol>
       </section>
 
-      <section className="papel-seccion">
-        <h2 className="titulo-seccion">Figuras del notebook</h2>
-        <p className="parrafo">Las mismas figuras que en el notebook de resultados del repositorio. Se abren a tamaño completo.</p>
-        <div className="galeria">
-          {FIGURAS_NOTEBOOK.map(([f, t], i) => (
-            <Revelar as="a" key={f} orden={i} className="galeria-item" href={`/results/${f}`} target="_blank" rel="noreferrer">
-              <img src={`/results/${f}`} alt={t} loading="lazy" />
-              <span>{t}</span>
-            </Revelar>
-          ))}
-        </div>
-      </section>
     </div>
   )
 }

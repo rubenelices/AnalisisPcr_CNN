@@ -140,9 +140,22 @@ Por eso los ~200 experimentos no distinguían arquitecturas: las diferencias de 
 
 - **Frena la memorización:** la diferencia FIT − interna en la última época pasa de 0,37 a 0,14, y la BCE interna se mantiene estable.
 - **No mejora la generalización:** interna máxima 0,625 y exterior 0,535 en el fold 0.
-- Según la regla fijada, se cierra la búsqueda de recetas, y la comparación obligatoria normal/ponderada se hace con P02 en los 5 folds.
+- Según la regla fijada, se cierra la búsqueda de recetas, y la comparación normal/ponderada en los 5 folds se hace con P02.
 
-### 5. Validación cruzada de 5 folds: normal frente a ponderada
+### 5. BCE normal frente a ponderada
+
+**Con la receta de E57** (N01, fold 0) se entrenaron las dos pérdidas sobre las mismas pacientes y con los mismos pesos iniciales, eligiendo época y umbral en la validación interna ([research/REVISION_N01_FOLD0.md](research/REVISION_N01_FOLD0.md)):
+
+| Fold 0 · receta de E57 | Normal | Ponderada (`pos_weight` = 2,41) |
+|---|---:|---:|
+| AUC exterior (219 pacientes) | **0,617** | 0,547 |
+| Sensibilidad con umbral 0,5 | 0 % | 52 % |
+| Sensibilidad con el umbral interno | 52 % | 38 % |
+| Brier | **0,205** | 0,245 |
+
+La ponderada multiplica el error de las pacientes con pCR y empuja todas las probabilidades hacia arriba: con umbral 0,5 detecta más pCR, pero ese efecto se consigue igual bajando el umbral de la normal. No ordena mejor a las pacientes y está peor calibrada. La normal, la que usa E57, queda por delante.
+
+Con esta receta la red apenas aprendía, así que no se repitió en los folds 1–4. **En 5 folds** la comparación se hizo con la receta corregida, P02:
 
 | Receta (5 folds, 1.097 pacientes) | AUC exterior conjunta | IC95 |
 |---|---:|---|
@@ -170,7 +183,7 @@ N01 era la prueba más directa del modelo entregado. Su fold 0 había dado 0,617
 
 ### 7. Decisión de entrega
 
-Las reglas se escribieron y se registraron con su SHA-256 antes de ver los resultados de la validación cruzada ([research/REGLAS_ENTREGA.md](research/REGLAS_ENTREGA.md)). P02 solo sustituiría a E57 si su AUC conjunta llegaba a 0,55. Como se quedó en 0,532, **se mantiene E57**, cuyo test ya estaba evaluado. No se ha evaluado ningún otro candidato en test.
+Las reglas se escribieron y se registraron con su SHA-256 antes de ver los resultados de la validación cruzada ([research/REGLAS_ENTREGA.md](research/REGLAS_ENTREGA.md)). P02 solo sustituiría a E57 si su AUC conjunta llegaba a 0,55. Como se quedó en 0,532, **se mantiene E57**, cuyo test ya estaba evaluado. La decisión se tomó con la validación cruzada, sin usar el test.
 
 ## Resultados
 
@@ -210,7 +223,7 @@ Las curvas completas (pérdida y AUC por época en FIT-eval, validación interna
 - **La receta de entrenamiento importaba más que la arquitectura.** Con lotes de 2 pacientes, BatchNorm impedía aprender; con 10, la red aprende. Una búsqueda de arquitecturas sobre una receta que no aprende no puede distinguir arquitecturas.
 - **Aprender no es generalizar.** Con la receta corregida la red memoriza el entrenamiento, y el aumento geométrico frena esa memorización sin mejorar el AUC en pacientes nuevas.
 - **La señal de imagen que generaliza es pequeña.** Con estos datos, cortes 2D y una CNN desde cero, ningún modelo supera de forma demostrable a la línea base de cohorte. El 0,573 del test de E57 es compatible con esa conclusión, porque su intervalo incluye 0,5.
-- **BCE normal frente a ponderada:** sin diferencia demostrada en AUC, aunque la ponderada empeora la calibración.
+- **BCE normal frente a ponderada:** con la receta de E57 (fold 0) la normal ordena mejor y está mejor calibrada; en los 5 folds de P02 no hay diferencia demostrada en AUC. En ambos casos la ponderada solo sube la sensibilidad con umbral 0,5 y empeora la calibración.
 - **Limitaciones:**
   - Los folds exteriores se observaron durante la historia del proyecto, así que no equivalen a un test nuevo.
   - E57 salió de muchos experimentos de desarrollo.
@@ -274,12 +287,12 @@ La arquitectura de E57 parte a parte: qué recibe, por qué se diseñó así, la
 
 ### Resultados
 
-Explica cómo se ha medido y recoge:
-- la validación cruzada de 5 folds de P02, con un selector de fold y de pérdida para ver las curvas de AUC y BCE de cada uno;
-- la comparación entre BCE normal y ponderada;
-- la matriz de confusión fuera de fold;
+Empieza por las métricas del test de E57 y una escala que compara todas las formas de medir el AUC: picos de validación, validaciones cruzadas, línea base de cohorte y test. Después recoge:
+- la **validación cruzada de E57** (su receta en los 5 folds, N01): AUC por fold, curvas de AUC y BCE por época con un selector de fold, y su matriz de confusión fuera de fold;
+- **BCE normal frente a ponderada** con la receta de E57: AUC, sensibilidad con el umbral 0,5 y con el umbral interno, y calibración;
 - el desglose por cohorte;
-- la decisión de entrega, las conclusiones y las figuras del notebook.
+- un **anexo desplegable de P02**, la receta corregida: por qué la comparación de pérdidas en 5 folds se hizo con ella, sus resultados con ambas pérdidas, sus curvas, su matriz de confusión y las figuras del notebook;
+- la decisión de entrega y las conclusiones.
 
 ### Pruebas
 

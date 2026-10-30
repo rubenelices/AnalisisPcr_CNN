@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-28",
+  "actualizado": "2026-10-30",
   "test_e57": {
     "auc": 0.5727872373063353,
     "ic95": [
@@ -30,6 +30,123 @@
   "picos_e57": {
     "fold0": 0.6702620967741935,
     "media": 0.6223866345551272
+  },
+  "cv_n01": {
+    "auc": 0.5073,
+    "ic95": [
+      0.47024736589764826,
+      0.5438810211066575
+    ],
+    "auc_corte": 0.5078,
+    "pacientes": 1097,
+    "cohorte_base": 0.5226,
+    "menos_cohorte": {
+      "diferencia": -0.0153,
+      "ic95": [
+        -0.0367,
+        0.0056
+      ]
+    },
+    "menos_p02": {
+      "diferencia": -0.0242,
+      "ic95": [
+        -0.0575,
+        0.0094
+      ]
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "epoca": 2,
+        "exterior": 0.6165,
+        "interna": 0.5721,
+        "fit": 0.5052
+      },
+      {
+        "fold": 1,
+        "epoca": 6,
+        "exterior": 0.4938,
+        "interna": 0.6109,
+        "fit": 0.5613
+      },
+      {
+        "fold": 2,
+        "epoca": 13,
+        "exterior": 0.5418,
+        "interna": 0.6182,
+        "fit": 0.5289
+      },
+      {
+        "fold": 3,
+        "epoca": 6,
+        "exterior": 0.4716,
+        "interna": 0.577,
+        "fit": 0.5847
+      },
+      {
+        "fold": 4,
+        "epoca": 6,
+        "exterior": 0.4447,
+        "interna": 0.5965,
+        "fit": 0.5406
+      }
+    ],
+    "cohortes": {
+      "duke": {
+        "n": 209,
+        "pcr": 44,
+        "auc": 0.4596418732782369
+      },
+      "spy1": {
+        "n": 104,
+        "pcr": 26,
+        "auc": 0.5014792899408285
+      },
+      "spy2": {
+        "n": 784,
+        "pcr": 252,
+        "auc": 0.5132697815968492
+      }
+    },
+    "matriz_conjunta": {
+      "tn": 512,
+      "fp": 263,
+      "fn": 216,
+      "tp": 106,
+      "pacientes": 1097,
+      "pcr": 322,
+      "sensibilidad": 0.32919254658385094,
+      "especificidad": 0.6606451612903226,
+      "balanced_accuracy": 0.4949188539370868,
+      "precision": 0.2872628726287263,
+      "folds": 5
+    },
+    "perdidas_fold0": {
+      "normal": {
+        "pos_weight": 1.0,
+        "epoca": 2,
+        "interna": 0.5721153846153846,
+        "exterior": 0.6165322580645162,
+        "umbral": 0.26394888460636134,
+        "brier": 0.20474891271636253,
+        "sensibilidad": 0.515625,
+        "especificidad": 0.6838709677419355,
+        "sensibilidad_05": 0.0,
+        "especificidad_05": 1.0
+      },
+      "weighted": {
+        "pos_weight": 2.407766990291262,
+        "epoca": 11,
+        "interna": 0.6496588089330024,
+        "exterior": 0.5474798387096774,
+        "umbral": 0.5029314473271369,
+        "brier": 0.244723441969338,
+        "sensibilidad": 0.375,
+        "especificidad": 0.6709677419354839,
+        "sensibilidad_05": 0.515625,
+        "especificidad_05": 0.5548387096774193
+      }
+    }
   },
   "cv_p02": {
     "normal": {

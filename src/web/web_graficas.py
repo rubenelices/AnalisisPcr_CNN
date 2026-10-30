@@ -21,6 +21,7 @@ E57 = ROOT/'reports/patient_features/E57_patient_feature_mean_mac/fold_0_seed_42
 E57_FOLDS = [E57] + [ROOT/f'experiments/E57_patient_feature_mean_mac/stability/resultados/fold_{k}_seed_42' for k in range(1, 5)]
 TEST = ROOT/'reports/final_e57_test_v1'
 P02 = ROOT/'reports/new_approach/P02_aumento_geometrico/runs_cuda'
+N01 = ROOT/'reports/new_approach/N01_e57_bce/runs'
 OVERFIT = ROOT/'reports/new_approach/P01_lotes_pacientes/overfit'
 E57_CV_ANIDADA = 0.527152   # validación anidada de 5 folds de E57 (ver tabla_e57 en cuaderno_resultados)
 
@@ -108,12 +109,13 @@ def _e57():
     )
 
 
-def _p02():
+def curvas_cv(raiz, perdidas=('normal', 'weighted')):
+    """Curvas por época y AUC exterior de cada fold de una validación cruzada guardada (P02 o N01)."""
     salida = {}
-    for loss in ('normal', 'weighted'):
+    for loss in perdidas:
         folds = []
         for k in range(5):
-            d = P02/f'{loss}_fold_{k}_seed_42'
+            d = Path(raiz)/f'{loss}_fold_{k}_seed_42'
             if not (d/'summary.json').is_file():
                 break
             s = json.loads((d/'summary.json').read_text())
@@ -133,7 +135,8 @@ def _memorizacion():
 
 def build():
     datos = dict(bce_constante=_r(cv_report.bce_constante()), bce_referencia=_r(cv_report.bce_referencia()),
-                 auc_referencia=cv_report.AUC_REFERENCIA, e57=_e57(), p02=_p02(), memorizacion=_memorizacion())
+                 auc_referencia=cv_report.AUC_REFERENCIA, e57=_e57(), n01=curvas_cv(N01, ('normal',)), p02=curvas_cv(P02),
+                 memorizacion=_memorizacion())
     DEST.parent.mkdir(parents=True, exist_ok=True)
     DEST.write_text(json.dumps(datos, ensure_ascii=False, separators=(',', ':')))
     return DEST

@@ -1,6 +1,7 @@
 """Exporta las cifras de la sección Resultados de la web a frontend/public/results/.
 
-Lee salidas ya guardadas (test de E57, informe de 5 folds de P02, historiales de E57);
+Lee salidas ya guardadas (test de E57, validación cruzada de su receta N01, informe de 5 folds de P02,
+historiales de E57);
 no entrena ni evalúa nada. Así la web no lleva números escritos a mano:
 
     python -m src.web.web_resultados          # y después: npm --prefix frontend run build
@@ -13,6 +14,7 @@ from datetime import date
 from pathlib import Path
 
 import pandas as pd
+from sklearn.metrics import roc_auc_score
 
 from src.evaluation import cv_report
 
@@ -20,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DEST = ROOT/'frontend/public/results'
 CV = ROOT/'reports/new_approach/P02_aumento_geometrico/cv_runs_cuda'
 RUNS = ROOT/'reports/new_approach/P02_aumento_geometrico/runs_cuda'
+N01 = ROOT/'reports/new_approach/N01_e57_bce'
 HISTORIAL = ROOT/'research/HISTORIAL_EXPERIMENTOS.md'
 METADATA = ROOT/'breastdcedl/metadata'
 
@@ -174,9 +177,46 @@ def _cv():
     return salida
 
 
+def cv_n01(base=N01):
+    """Validación cruzada de la receta de E57 (N01, BCE normal) en los 5 folds: cada paciente predicha por el
+    modelo del fold en que quedó fuera. Lee el resumen y las predicciones exteriores guardadas; no usa el test."""
+    base = Path(base)
+    if not (base/'cv/resumen.json').is_file():
+        return {}
+    s = json.loads((base/'cv/resumen.json').read_text())
+    p = pd.read_csv(base/'cv/predicciones_exteriores.csv')
+    return dict(
+        auc=s['auc_conjunta']['n01'], ic95=cv_report.bootstrap_auc(p.target, p.n01), auc_corte=s['auc_por_corte']['n01'],
+        pacientes=int(len(p)), cohorte_base=s['auc_conjunta']['cohorte_base'],
+        menos_cohorte=s['n01_menos_cohorte'], menos_p02=s['n01_menos_p02'],
+        folds=[dict(fold=f['fold'], epoca=f['epoca'], exterior=f['auc_exterior'], interna=f['auc_interna'], fit=f['auc_fit'])
+               for f in s['por_fold']['n01']],
+        cohortes={c: dict(n=int(len(g)), pcr=int(g.target.sum()), auc=float(roc_auc_score(g.target, g.n01)))
+                  for c, g in p.groupby('cohorte')},
+        matriz_conjunta=matriz_conjunta(base/'runs', folds=len(s['por_fold']['n01'])),
+        perdidas_fold0=perdidas_fold0(base/'runs'))
+
+
+def perdidas_fold0(runs):
+    """BCE normal frente a ponderada con la receta de E57 en el fold 0, el único en que se entrenaron las dos:
+    AUC exterior y sensibilidad con el umbral 0,5 y con el umbral elegido en la validación interna."""
+    rutas = {loss: Path(runs)/f'{loss}_fold_0_seed_42/summary.json' for loss in cv_report.LOSSES}
+    if not all(r.is_file() for r in rutas.values()):
+        return {}
+    salida = {}
+    for loss, path in rutas.items():
+        s = json.loads(path.read_text())
+        a, b = s['outer_at_inner_threshold'], s['outer_at_05']['metrics']
+        salida[loss] = dict(pos_weight=s['pos_weight'], epoca=s['best_epoch'], interna=s['best_inner_auc'],
+                            exterior=a['roc_auc'], umbral=s['threshold'], brier=a['brier_score'],
+                            sensibilidad=a['sensitivity'], especificidad=a['specificity'],
+                            sensibilidad_05=b['sensitivity'], especificidad_05=b['specificity'])
+    return salida
+
+
 def build():
     DEST.mkdir(parents=True, exist_ok=True)
-    datos = dict(actualizado=date.today().isoformat(), test_e57=_test_e57(), picos_e57=_picos_e57(), cv_p02=_cv(),
+    datos = dict(actualizado=date.today().isoformat(), test_e57=_test_e57(), picos_e57=_picos_e57(), cv_n01=cv_n01(), cv_p02=_cv(),
                  experimentos=_experimentos(), particiones=_particiones(),
                  referencia=dict(auc=cv_report.AUC_REFERENCIA, bce=cv_report.bce_referencia(), bce_constante=cv_report.bce_constante()))
     (DEST/'resumen.json').write_text(json.dumps(datos, indent=2, ensure_ascii=False))
