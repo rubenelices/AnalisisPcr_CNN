@@ -24,7 +24,7 @@ class MultimodalPCRNet(nn.Module):
         self.image_encoder.classifier = nn.Identity()
         self.clinical_branch = nn.Sequential(nn.Linear(8, 16), nn.ReLU())
         if type(fusion_hidden) is not int or fusion_hidden not in (0,32):
-            raise ValueError('Fusión autorizada: lineal o hidden32')
+            raise ValueError('Fusión admitida: lineal o hidden32')
         self.fusion_hidden = fusion_hidden
         self.fusion = (nn.Linear(image_width+16, 1) if fusion_hidden==0 else
                        nn.Sequential(nn.Linear(image_width+16,32),nn.ReLU(),nn.Linear(32,1)))

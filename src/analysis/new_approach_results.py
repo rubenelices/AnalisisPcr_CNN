@@ -1,7 +1,7 @@
 """Vista de la etapa activa a partir de documentos y salidas ya guardadas.
 
 No importa modelos, carga imágenes del dataset ni ejecuta inferencia. Conserva
-las celdas añadidas al notebook para futuros experimentos o notas del estudiante.
+las celdas añadidas al notebook para futuros experimentos o notas manuales.
 """
 import copy
 import os

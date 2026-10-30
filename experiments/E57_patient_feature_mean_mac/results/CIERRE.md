@@ -16,7 +16,7 @@ Checkpoint propuesto: `checkpoints/E57_patient_feature_mean_mac/fold_0_seed_42/b
 
 1. Cerrar el checkpoint y la regla de inferencia anteriores antes de ejecutar test. Esta es una propuesta concreta, todavía no un registro de evaluación final realizada.
 2. Preparar el comando de evaluación final para el cargador de E57. El evaluador genérico actual está reservado a validación y usa otra clase de modelo; no debe reutilizarse apuntándolo directamente a test.
-3. El estudiante ejecutará una sola evaluación local sobre las 176 pacientes públicas de test. Guardar ROC-AUC, AP, sensibilidad, especificidad, precisión, F1, balanced accuracy, matriz y calibración, con intervalos por paciente. Mantener el umbral prefijado aunque el resultado sea peor de lo esperado.
+3. Se ejecutará una sola evaluación local sobre las 176 pacientes públicas de test. Guardar ROC-AUC, AP, sensibilidad, especificidad, precisión, F1, balanced accuracy, matriz y calibración, con intervalos por paciente. Mantener el umbral prefijado aunque el resultado sea peor de lo esperado.
 4. Incorporar ese resultado al notebook principal y a esta carpeta. La comparación train/validación/test debe referirse al mismo checkpoint; 0,6224 es la media de máximos de cinco modelos y no el AUC de validación de este único checkpoint.
 5. Integrar el mismo cargador, preprocesamiento, agregación y umbral en la demostración. Si la demostración recibe un único corte, identificar esa limitación: no es la media de todos los cortes de la paciente.
 

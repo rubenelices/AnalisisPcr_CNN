@@ -32,7 +32,7 @@ from src.pipeline.augmentation import build_train_transform
 def load_spec(path):
     spec = json.loads(Path(path).read_text())
     if spec.get('schema') not in {'multimodal_e19_v1','clinical_only_e58_v1','multimodal_patient_e58_v1','multimodal_compact_e58_v1','multimodal_basic_regularized_v1'} or spec.get('clinical_columns') != list(CLINICAL_COLUMNS):
-        raise ValueError('Esquema clínico no autorizado: usar solo cuatro variables prefijadas')
+        raise ValueError('Esquema clínico no admitido: usar solo cuatro variables prefijadas')
     patient_protocol=spec['schema']=='multimodal_patient_e58_v1'
     cfg = experiment_config_from_dict(spec['experiment'])
     validate_positive_weight_exponent(spec.get('positive_weight_exponent',1.),cfg.training.loss)

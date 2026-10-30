@@ -1,6 +1,6 @@
 # E13 durante 50 épocas, sin parada temprana
 
-Petición explícita del estudiante en la universidad: probar un entrenamiento
+En la universidad: probar un entrenamiento
 más largo y dejar la GPU trabajando. Se conserva la arquitectura, representación,
 datos y ajustes de E13; no es E14 de dropout espacial, que sigue sin implementar.
 

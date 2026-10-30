@@ -120,7 +120,7 @@ def report():
         details.extend([nbformat.v4.new_markdown_cell(text),cell,png_cell(diagnostic)])
     table=pd.DataFrame(rows);table.to_csv(ROOT/'resumen.csv',index=False)
     intro='# Experimentos locales · 16 octubre\n\n'
-    intro+='Sesión de mañana interrumpida por el usuario; nueva tanda de tarde autorizada. Solo train público; test cerrado. '
+    intro+='Solo train público; test cerrado. '
     intro+='CNN desde cero, sin clínica ni pesos externos. Búsqueda exploratoria: '
     intro+='no declarar ganador por un pico ni presentar selección en validación como test.\n\n'
     intro+=table.round(4).to_markdown(index=False) if len(table) else 'Primer experimento en preparación.'

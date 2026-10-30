@@ -92,7 +92,7 @@ function GraficasEntrenamiento({ g, r }) {
       </Figura>
 
       <Figura titulo="AUC medido de cuatro formas"
-        leyenda={[{ texto: 'Optimista: época elegida con esas pacientes', color: COLOR.valid }, { texto: 'Honesta: pacientes no vistas', color: COLOR.test }]}
+        leyenda={[{ texto: 'Optimista: época elegida con esas pacientes', color: COLOR.valid }, { texto: 'Pacientes no vistas', color: COLOR.test }]}
         explicacion={<>
           <p>Las dos barras naranjas usan la época que mejor fue en validación, medida en esa misma validación: por eso salen altas. Las oscuras miden con pacientes que no intervinieron en ninguna decisión.</p>
           <p>La receta de E57 no evaluaba el conjunto de entrenamiento en cada época; la comparación entre entrenamiento y validación está en Resultados, con P02.</p>

@@ -36,7 +36,7 @@ Análisis: `python -m src.analysis.analisis_p05`. Mismo método que el paso 0: p
 2. AUC exterior conjunta ≥ 0,55 (regla 4);
 3. IC95 pareado de AUC(P05) − AUC(línea base de cohorte) por encima de 0: que la mejora no sea solo saber de qué cohorte viene la paciente.
 
-Si las cumple, se propone al estudiante cambiar el entregable al promedio de los 5 modelos de P05 con la mediana de los 5 umbrales internos y **una única** evaluación en test. Nada de eso se ejecuta sin su aprobación.
+Si las cumple, se propone cambiar el entregable al promedio de los 5 modelos de P05 con la mediana de los 5 umbrales internos y **una única** evaluación en test. Nada de eso se ejecuta sin su aprobación.
 
 **Se reportan siempre, sin decidir:** AUC por corte; AUC dentro de cada cohorte (en especial Duke, que en P02 se ordenaba al revés: 0,40); época elegida por fold; brecha AUC FIT − interna en la época elegida (comprueba el mecanismo de la hipótesis); curvas completas por fold.
 
@@ -46,14 +46,14 @@ Si las cumple, se propone al estudiante cambiar el entregable al promedio de los
 
 ## Coste y ejecución
 
-Lo lanza el estudiante. Smoke técnico (1 época, subconjunto) y 5 folds, BCE normal. Con una tasa menor la parada temprana llega más tarde: en GPU ≈ 75–90 s por época, hasta 50 épocas por fold, entre 2 y 6 horas en total. En el Mac (MPS), el triple.
+Se lanza a mano. Smoke técnico (1 época, subconjunto) y 5 folds, BCE normal. Con una tasa menor la parada temprana llega más tarde: en GPU ≈ 75–90 s por época, hasta 50 épocas por fold, entre 2 y 6 horas en total. En el Mac (MPS), el triple.
 
 ```bash
 python -m src.campaigns.run_p05_noche --check
 python -m src.campaigns.run_p05_noche
 ```
 
-## Expectativa honesta
+## Expectativa
 
 P02 no superó a la línea base de cohorte (+0,009 [−0,025, +0,042]) y los análisis del paso 0 no encontraron señal de imagen más allá de la cohorte. Lo más probable es que P05 tampoco cumpla. Si cumple, sería la primera receta propia que demuestra aprender algo de la imagen; si no, refuerza la conclusión con una causa más descartada (el tamaño del paso).
 

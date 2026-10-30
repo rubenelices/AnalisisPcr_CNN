@@ -3,8 +3,8 @@
 Preparación solicitada el 7 de octubre de 2026. No son los canales constantes
 propuestos inicialmente como E56: esa propuesta no se implementó. Aquí E56
 es el control de cabeza no lineal, y E57 el ensayo de agregación de características.
-Sin transfer learning, pesos ajenos, Git, web, despliegue o test. Científicos
-pendientes por el estudiante; no reanuda la campaña autónoma terminada.
+Sin transfer learning, pesos ajenos, Git, web, despliegue o test. Entrenamientos
+científicos pendientes.
 
 ## Corrección conceptual y motivación
 

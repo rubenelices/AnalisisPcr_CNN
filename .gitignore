@@ -271,12 +271,8 @@ resultados_p02_gpu_*.tar.gz
 # (BreastDCEDL, CC BY-NC 4.0) sí se versionan, con atribución en frontend/public/LICENCIA_IMAGENES.md.
 frontend/node_modules/
 frontend/dist/
-.taste-skill/
 pruebas_defensa/
 
 # Notas de trabajo y configuración local del entorno de desarrollo (no forman parte del proyecto).
 local/
-CLAUDE.md
-AGENTS.md
-.claude/
 .vscode/

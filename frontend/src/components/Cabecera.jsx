@@ -104,7 +104,7 @@ const TITULARES = {
     'Elige un corte, aplícale las transformaciones del entrenamiento, ajusta el umbral y comprueba qué zonas modifican la probabilidad que da E57.'],
   modelo: ['Modelo · E57', 'Una CNN propia, capa a capa',
     '298.161 parámetros entrenados desde cero: la arquitectura, el entrenamiento y cómo se eligió.'],
-  resultados: ['Resultados · evaluación honesta', 'Lo que dicen las cifras',
+  resultados: ['Resultados · evaluación', 'Lo que dicen las cifras',
     'Test público, validación cruzada de 5 folds, normal frente a ponderada y la decisión de entrega.'],
   pruebas: ['Pruebas · para la defensa', 'Carga tus propios cortes',
     'Suelta las tres fases de uno o varios cortes y compara la predicción con la etiqueta real.'],

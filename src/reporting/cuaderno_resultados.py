@@ -79,7 +79,7 @@ def tabla_resumen():
 
 
 def tabla_e57():
-    """Las cifras de E57 que se citan, separando las optimistas de las honestas."""
+    """Las cifras de E57 que se citan, separando las optimistas de las de pacientes no vistas."""
     picos = [pd.read_csv(ROOT/'reports/patient_features/E57_patient_feature_mean_mac/fold_0_seed_42/history.csv').patient_roc_auc.max()]
     for k in range(1, 5):
         picos.append(pd.read_csv(ROOT/f'experiments/E57_patient_feature_mean_mac/stability/resultados/fold_{k}_seed_42/history.csv').patient_roc_auc.max())
@@ -88,9 +88,9 @@ def tabla_e57():
     filas = [
         {'Medida': 'Pico de validación, fold 0 (época 14 de 24)', 'AUC': picos[0], 'Tipo': 'optimista: época elegida en la misma validación'},
         {'Medida': 'Media de los picos de 5 folds', 'AUC': float(np.mean(picos)), 'Tipo': 'optimista'},
-        {'Medida': 'Validación anidada de 5 folds (otra receta, 15/10)', 'AUC': 0.527152, 'Tipo': 'honesta'},
+        {'Medida': 'Validación anidada de 5 folds (otra receta, 15/10)', 'AUC': 0.527152, 'Tipo': 'pacientes no vistas'},
         {'Medida': f"Test público, una evaluación (IC95 {_coma(ic['lower'])}–{_coma(ic['upper'])})",
-         'AUC': test['patient_metrics_primary']['roc_auc'], 'Tipo': 'honesta'},
+         'AUC': test['patient_metrics_primary']['roc_auc'], 'Tipo': 'pacientes no vistas'},
     ]
     return _tabla(pd.DataFrame(filas))
 
@@ -378,7 +378,7 @@ def entrega():
                   f"TN {c['tn']}, FP {c['fp']}, FN {c['fn']}, TP {c['tp']}; sensibilidad {_coma(m['sensitivity'])}, "
                   f"especificidad {_coma(m['specificity'])}.")
     else:
-        texto += '\n\nEl test todavía no se ha evaluado; se hará una sola vez, con el visto bueno del estudiante.'
+        texto += '\n\nEl test todavía no se ha evaluado; se hará una sola vez.'
     return texto
 
 
@@ -638,7 +638,7 @@ Las reglas para elegir el modelo final se fijaron el 20 de octubre, antes de ver
 
 E57 es la red con la que empezó esta etapa (descrita en la sección 1) entrenada con su receta original: lotes de 2 pacientes y sin aumento.
 
-Sus cifras optimistas y honestas no son comparables entre sí. El detalle de sus 5 folds y del test está en [E57/RESULTADOS.ipynb](../E57/RESULTADOS.ipynb); la versión anterior de este notebook, con N01 completo, en [anteriores/RESULTADOS_N01.ipynb](anteriores/RESULTADOS_N01.ipynb).
+Sus cifras optimistas y las de pacientes no vistas no son comparables entre sí. El detalle de sus 5 folds y del test está en [E57/RESULTADOS.ipynb](../E57/RESULTADOS.ipynb); la versión anterior de este notebook, con N01 completo, en [anteriores/RESULTADOS_N01.ipynb](anteriores/RESULTADOS_N01.ipynb).
 """),
         _code('R.tabla_e57()'),
         _md("""
@@ -658,7 +658,7 @@ La misma receta P02 normal entrenada con tres semillas por fold (15 modelos) y p
 <a id="n01cv"></a>
 ## 10. N01 en 5 folds: la receta de E57 con validación cruzada
 
-E57 no tenía una validación cruzada limpia propia: su cifra honesta es el test. N01 es su receta (2 pacientes × 10 cortes por lote, sin aumento) con el protocolo FIT / interna / exterior; solo existía el fold 0 (exterior 0,617, la más alta del proyecto, con AUC de FIT 0,505). Se completaron los folds 1–4 para medirla en las 1.097 pacientes. No es candidata a entrega. Criterios en [N01_CV.md](N01_CV.md).
+E57 no tenía una validación cruzada limpia propia: su cifra de referencia es el test. N01 es su receta (2 pacientes × 10 cortes por lote, sin aumento) con el protocolo FIT / interna / exterior; solo existía el fold 0 (exterior 0,617, la más alta del proyecto, con AUC de FIT 0,505). Se completaron los folds 1–4 para medirla en las 1.097 pacientes. No es candidata a entrega. Criterios en [N01_CV.md](N01_CV.md).
 """),
         _code('display(Markdown(R.n01_cv()))'),
         _md("""

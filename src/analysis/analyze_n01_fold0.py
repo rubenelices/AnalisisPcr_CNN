@@ -148,7 +148,7 @@ Se cuentan las bandas descriptivas ±0,005 y ±0,01 alrededor del umbral congela
 
 ''' + table('near_threshold') + '''
 
-En la ponderada, 98 de 219 pacientes están dentro de ±0,005 del umbral interno. Pasar de 0,5 al umbral interno ya fijado cambia 27 predicciones. Esto ayuda a explicar por qué una matriz puede variar mucho con un cambio numéricamente pequeño. No autoriza a escoger ahora el corte que dé mejor matriz exterior.
+En la ponderada, 98 de 219 pacientes están dentro de ±0,005 del umbral interno. Pasar de 0,5 al umbral interno ya fijado cambia 27 predicciones. Esto ayuda a explicar por qué una matriz puede variar mucho con un cambio numéricamente pequeño. No permite escoger ahora el corte que dé mejor matriz exterior.
 
 ## Probabilidades y calibración
 

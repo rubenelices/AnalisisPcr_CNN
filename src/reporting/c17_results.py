@@ -85,7 +85,7 @@ def build():
         h=pd.read_csv(folder/'history.csv') if (folder/'history.csv').exists() else None
         selected=json.loads((folder/'selection.json').read_text()) if (folder/'selection.json').exists() else None
         done=json.loads((folder/'summary.json').read_text()) if (folder/'summary.json').exists() else None
-        state='Completo' if done else 'En curso/parcial' if h is not None else 'Pendiente · lo ejecuta el estudiante'
+        state='Completo' if done else 'En curso/parcial' if h is not None else 'Pendiente · se ejecuta a mano'
         row=dict(Pérdida=loss,Estado=state,Épocas=0 if h is None else len(h))
         if selected is not None:
             m=selected['validation_eval']['patient_metrics'];tr=selected['train_eval']['patient_metrics']

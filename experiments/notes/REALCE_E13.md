@@ -75,7 +75,7 @@ Prueba técnica pequeña (CPU, dos épocas, 8 pacientes train y 4 validación):
 python -m src.smoke_training --config configs/experiments/SMOKE_phase_differences.json
 ```
 
-Entrenamiento científico, cuando el estudiante decida, desde la raíz del repo:
+Entrenamiento científico, desde la raíz del repo:
 
 ```bash
 python -m src.training.train --config configs/experiments/E13_phase_differences.json --device auto
@@ -100,13 +100,13 @@ errores. El diagrama E13 se ha inspeccionado visualmente.
 
 ## Resultado científico observado
 
-Ejecución del estudiante en MPS, Python 3.13.5 y PyTorch 2.11.0, diez épocas:
+Ejecución en MPS, Python 3.13.5 y PyTorch 2.11.0, diez épocas:
 mejor checkpoint en época 10, ROC-AUC paciente 0,5724798387 y AP 0,3508598157.
 Tiempo total 421,48 s. No supera E05 Mac (ROC-AUC 0,586895).
 A umbral 0,5: TN=132, FP=23, FN=50, TP=14; sensibilidad 0,21875 y
 especificidad 0,851613. Loss train final 0,527474, validación 0,656577.
 El LR registrado permanece en 0,001 durante las diez épocas. Fuente:
-summary.json/history.csv locales y salida compartida por el estudiante.
+summary.json/history.csv locales y salida de terminal.
 No se ha evaluado test. Mejor época final no implica convergencia ni garantiza
 una mejora al prolongar; revisar diagnóstico train/validación antes de decidir.
 

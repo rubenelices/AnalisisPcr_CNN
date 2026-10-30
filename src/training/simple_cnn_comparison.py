@@ -1,4 +1,4 @@
-"""Contraste autorizado: CNN propia de cuatro convoluciones, 97.809 parámetros.
+"""Contraste: CNN propia de cuatro convoluciones, 97.809 parámetros.
 
 Dos representaciones prefijadas, cinco folds; no búsqueda ni selección exterior.
 Los runners y checkpoints de la campaña cerrada permanecen intactos.

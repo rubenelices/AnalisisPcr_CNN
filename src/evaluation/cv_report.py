@@ -36,7 +36,7 @@ LOSS_LABEL = {'normal': 'BCE normal', 'weighted': 'BCE ponderada (N0/N1)'}
 COHORT_LABEL = {'duke': 'Duke', 'spy1': 'I-SPY1', 'spy2': 'I-SPY2'}
 FIXED_THRESHOLDS = (0.325, 0.5)  # 0,325: umbral E57 fijado antes de estos datos; 0,5: referencia
 
-# Colores (validados con la guía de visualización): mismos papeles que las figuras del estudiante.
+# Colores (validados con la guía de visualización): mismos papeles que las figuras del trabajo.
 TRAIN, VALID, OUTER = '#2a78d6', '#eb6834', '#3d4148'
 LOSS_COLOR = {'normal': '#1baf7a', 'weighted': '#e87ba4'}
 LOSS_STYLE = {'normal': '-', 'weighted': '--'}  # codificación secundaria (daltonismo)

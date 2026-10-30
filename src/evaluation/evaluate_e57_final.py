@@ -1,4 +1,4 @@
-"""Una evaluación de test autorizada: E57 original, época14, umbral0,325.
+"""Una evaluación de test: E57 original, época14, umbral0,325.
 
 Los parámetros están fijados en código antes de leer test. `report` solo vuelve
 a presentar los resultados guardados y no recalcula inferencia.

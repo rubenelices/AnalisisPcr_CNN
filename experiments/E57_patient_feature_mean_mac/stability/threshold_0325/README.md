@@ -1,4 +1,4 @@
-## E57 · versión con umbral 0,325 solicitada por el estudiante
+## E57 · versión con umbral 0,325
 
 |   Fold |    AUC |     AP |   Precisión pCR |   Sensibilidad |   Especificidad |     BA |   F1 macro |   TN |   FP |   FN |   TP |
 |-------:|-------:|-------:|----------------:|---------------:|----------------:|-------:|-----------:|-----:|-----:|-----:|-----:|
@@ -10,6 +10,6 @@
 
 Conteos de los cinco folds: **TN 381, FP 394, FN 123, TP 199**. Sensibilidad 61.8%; especificidad 49.2%; precisión pCR 33.6%; balanced accuracy 0.5548.
 
-**Cambiar el umbral es válido y no requiere reentrenar.** Aquí 0,325 se ha elegido después de ver estos resultados: esta tabla es exploratoria y no una estimación independiente del rendimiento futuro. La comparación honesta conserva la matriz original a 0,5 y declara cómo se eligió la nueva. Para estimar generalización, fijar el procedimiento de selección usando solo train/validación interna y evaluar en pacientes distintas. El AUC, AP, probabilidades, pesos y curvas por época son los mismos.
+**Cambiar el umbral es válido y no requiere reentrenar.** Aquí 0,325 se ha elegido después de ver estos resultados: esta tabla es exploratoria y no una estimación independiente del rendimiento futuro. La comparación conserva la matriz original a 0,5 y declara cómo se eligió la nueva. Para estimar generalización, fijar el procedimiento de selección usando solo train/validación interna y evaluar en pacientes distintas. El AUC, AP, probabilidades, pesos y curvas por época son los mismos.
 
 Clasificar más positivas también incrementa los falsos positivos. Ningún cambio de umbral puede crear separación entre clases que el modelo no ha aprendido.

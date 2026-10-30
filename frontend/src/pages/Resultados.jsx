@@ -234,7 +234,7 @@ function ValidacionCruzada({ r, g }) {
         <Figura titulo="AUC de pacientes no vistas, fold a fold"
           leyenda={[{ texto: `BCE normal (conjunta ${fmt(n.auc, 3)})`, color: COLOR.train }, ...(w ? [{ texto: `BCE ponderada (conjunta ${fmt(w.auc, 3)})`, color: COLOR.valid }] : []),
             { texto: 'Azar', color: COLOR.azar, tipo: 'discontinua' }]}
-          explicacion={<p>Cada fold deja fuera 219 pacientes que no intervienen ni en el entrenamiento ni en la elección de época y umbral. Las cinco barras de cada color suman las {n.pacientes} pacientes de entrenamiento: es la medida honesta de la receta.</p>}>
+          explicacion={<p>Cada fold deja fuera 219 pacientes que no intervienen ni en el entrenamiento ni en la elección de época y umbral. Las cinco barras de cada color suman las {n.pacientes} pacientes de entrenamiento: es la medida de la receta con pacientes no vistas.</p>}>
           <Grafico x={[0.4, 5.6]} y={[0.4, 0.65]} ticksX={[1, 2, 3, 4, 5]} ticksY={[0.4, 0.45, 0.5, 0.55, 0.6, 0.65]} fmtX={(v) => `fold ${v - 1}`} fmtY={(v) => fmt(v, 2)}
             etiquetaX="" etiquetaY="AUC exterior" descripcion="AUC exterior por fold con BCE normal y ponderada">
             <Horizontal y={0.5} etiqueta="azar" lado="izquierda" />
@@ -308,7 +308,7 @@ function MatrizConjunta({ m, test, receta }) {
         <p className="parrafo">
           Son los <strong>5 folds juntos, no un fold</strong>: cada una de las {mil(m.pacientes)} pacientes de entrenamiento aparece
           una sola vez, predicha por el modelo del fold en que quedó fuera y con el umbral interno de ese fold. Es la
-          evaluación honesta de {receta}.
+          evaluación de {receta} con pacientes no vistas.
         </p>
         <p className="parrafo">
           Sensibilidad <strong>{fmt(m.sensibilidad, 3)}</strong> ({m.tp} de {m.pcr} pCR detectadas) y especificidad{' '}
@@ -553,7 +553,7 @@ export function Resultados() {
           <Revelar as="li" orden={0}><strong>El modelo inicial no aprendía.</strong> Con lotes de 2 pacientes, BatchNorm impedía aprender diferencias entre pacientes; con 10 por lote, la red aprende.</Revelar>
           <Revelar as="li" orden={1}><strong>Aprender no es generalizar.</strong> Lo que la red aprende se traslada poco a pacientes nuevas, incluso con aumento de datos; la BCE ponderada no lo mejora.</Revelar>
           <Revelar as="li" orden={2}><strong>La cohorte pesa.</strong> Saber solo de qué cohorte viene la paciente ya da {n01?.cohorte_base ? fmt(n01.cohorte_base, 2) : '—'}, y ninguna receta lo supera de forma demostrable: con solo imagen y 1.097 pacientes de tres cohortes, la señal es débil y en parte específica de cada cohorte.</Revelar>
-          <Revelar as="li" orden={3}><strong>Las cifras honestas están cerca del azar.</strong> El pico de validación de E57 (0,67) prometía más que su test (0,57), y la validación cruzada de su receta ({n01?.auc ? fmt(n01.auc, 2) : '—'}) indica que parte de ese 0,57 es suerte de un test de {t.pacientes} pacientes: su intervalo incluye 0,5.</Revelar>
+          <Revelar as="li" orden={3}><strong>Las cifras con pacientes no vistas son modestas.</strong> El pico de validación de E57 (0,67) prometía más que su test (0,57), y la validación cruzada de su receta ({n01?.auc ? fmt(n01.auc, 2) : '—'}) indica que parte de ese 0,57 es suerte de un test de {t.pacientes} pacientes: su intervalo incluye 0,5.</Revelar>
         </ol>
       </section>
 

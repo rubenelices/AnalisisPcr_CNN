@@ -8,7 +8,7 @@ Matriz0,5TN155/FP0/FN64/TP0; sensibilidad/F1pCR0. Trainloss0,612→0,355,
 valloss termina0,870; sobreajuste tardío. No cumple nuevoobjetivoROC0,65 y
 matrizútil. No alargar/repetir, ni atribuir un único ensayo a inutilidad de edad.
 Épocas y gráficos originales conservados; test no evaluado.
-Las notas de preparación inferiores son historial, no nueva autorización.
+Las notas de preparación inferiores son historial.
 
 Preparado el 14 de octubre. El entrenamiento se lanza manualmente en local.
 
@@ -28,7 +28,7 @@ Umbral0,5 es diagnóstico provisional, no decisión final. Test cerrado.
 python -u -m src.training.train_multimodal --config configs/multimodal/SMOKE_D36_edad_menopausia_mac.json --device mps
 ```
 
-Primero esa comprobación técnica de2épocas/8train/4val, lanzada por el estudiante;
+Primero esa comprobación técnica de2épocas/8train/4val, lanzada;
 sin interpretar sus AUC. Si finaliza sin errores, ejecutar el científico:
 
 ```sh

@@ -5,14 +5,12 @@ Punto de entrada desde el **20 de octubre de 2026**. Esta etapa se centra en cer
 | Qué necesitas | Dónde está |
 |---|---|
 | Ver todos los resultados sin ejecutar nada | [RESULTADOS.ipynb](RESULTADOS.ipynb) |
-| Saber qué está hecho y qué falta | [ESTADO.md](ESTADO.md) |
-| Entender el plan y las decisiones | [PLAN.md](PLAN.md) |
+| Ver el estado final | [ESTADO.md](ESTADO.md) |
 | Arrancar y comprobar la demo | [DEMO.md](DEMO.md) |
 | Entender y ejecutar la comparación preparada | [Protocolo N01](PROTOCOLO_N01.md) · [Ejecución](EJECUTAR_N01.md) |
 | Entender los errores de N01 sin entrenar | [Diagnóstico de la primera pareja](DIAGNOSTICO_N01_FOLD0.md) |
-| Revisar el texto del informe | [Borrador técnico](INFORME_BORRADOR.md) |
 
-El notebook incluye como **antecedentes** las 108 épocas de los cinco folds E57, la arquitectura, las gráficas de pérdida y AUC, las matrices de confusión y el test ya realizado. La sección propia de N01 ya contiene las 33 épocas de la primera pareja del fold 0, ejecutada por el estudiante: [revisión y conclusiones](REVISION_N01_FOLD0.md).
+El notebook incluye como **antecedentes** las 108 épocas de los cinco folds E57, la arquitectura, las gráficas de pérdida y AUC, las matrices de confusión y el test ya realizado. La sección propia de N01 ya contiene las 33 épocas de la primera pareja del fold 0: [revisión y conclusiones](REVISION_N01_FOLD0.md).
 
 ## Punto de partida
 

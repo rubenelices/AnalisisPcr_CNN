@@ -1,6 +1,6 @@
 # E57 · comprobar estabilidad sin cambiar la CNN
 
-**Estado:** smoke y folds 1–4 completados por el estudiante. [Resultados con figuras visibles](RESULTADOS.ipynb) · [conclusiones](CONCLUSIONES.md). Las instrucciones de ejecución siguientes quedan como registro reproducible, no como indicación de repetir ni sobrescribir estas ejecuciones.
+**Estado:** smoke y folds 1–4 completados. [Resultados con figuras visibles](RESULTADOS.ipynb) · [conclusiones](CONCLUSIONES.md). Las instrucciones de ejecución siguientes quedan como registro reproducible, no como indicación de repetir ni sobrescribir estas ejecuciones.
 
 [Auditoría de la matriz y solución que debe evaluarse](DIAGNOSTICO_MATRIZ.md): media por paciente, etiquetas y matrices verificadas; las probabilidades máximas de todos los folds son inferiores a 0,5. El notebook principal incluye matrices a umbrales fijos como diagnóstico, sin presentarlas como mejora validada de forma independiente.
 

@@ -28,7 +28,7 @@ Solo cambia identidad, descripción y carpetas. No usa aumentos ni pesos anterio
 python -m src.training.train --config configs/experiments/E05_mac_reference.json --device auto
 ```
 
-En el entorno del estudiante, `auto` ha elegido MPS: GPU integrada de Apple,
+En el entorno local, `auto` ha elegido MPS: GPU integrada de Apple,
 computación local, no un servicio de pago. Comprobar que `environment.device`
 vuelve a ser `mps`, con el mismo Python/PyTorch que E08/E10. MPS usa float32 en
 este runner; CUDA podía usar precisión mixta. No forzar CUDA en el Mac.
@@ -38,7 +38,7 @@ Guardar por separado en:
 - `reports/experiments/E05_mac_reference/fold_0_seed_42/`
 - `checkpoints/E05_mac_reference/fold_0_seed_42/`
 
-Ejecución completa ya realizada por el estudiante; el comando queda como
+Ejecución completa ya realizada; el comando queda como
 documentación, no como instrucción de repetirla ahora. No usar `--overwrite`.
 Su coste puede ser del orden de E08 (unos siete minutos en la ejecución
 compartida), pero cambia con temperatura, carga y entorno. No es un plazo garantizado.
@@ -111,7 +111,7 @@ El notebook `notebooks/05_resultados_experimentos.ipynb` recoge esta comparació
 `experiments/notes/cohortes_registradas.json` guarda una copia agregada seleccionada
 de los informes, sin identificadores: permite consultar las cifras sin los
 archivos locales. La procedencia se muestra al ejecutar el cuaderno.
-Por petición del estudiante, se actualiza el registro y no se lanza otro
+Se actualiza el registro y no se lanza otro
 experimento ni se modifica la arquitectura en esta etapa.
 
 1. Si E05 en Mac mantiene una ventaja, E08/E10 no mejoran esta referencia en

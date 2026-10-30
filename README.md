@@ -36,7 +36,7 @@ Proyecto de Aprendizaje Automático (Universidad Alfonso X el Sabio, 2026–2027
 | **Validación cruzada de la receta** | AUC 0,507 en 1.097 pacientes (predicciones fuera de fold) |
 | **Línea base** | Saber solo la cohorte de la paciente: AUC 0,523 |
 
-El trabajo tuvo tres etapas. Primero, una búsqueda amplia de casi 200 experimentos de arquitectura y regularización, de la que salió E57. Segundo, un diagnóstico que explicó por qué esas comparaciones no distinguían nada: con la receta de entrenamiento original la red apenas aprendía. Tercero, una serie de hipótesis con criterios escritos antes de ejecutar (P01–P07, N01) para corregir la receta y medir con honestidad cuánta señal hay en la imagen.
+El trabajo tuvo tres etapas. Primero, una búsqueda amplia de casi 200 experimentos de arquitectura y regularización, de la que salió E57. Segundo, un diagnóstico que explicó por qué esas comparaciones no distinguían nada: con la receta de entrenamiento original la red apenas aprendía. Tercero, una serie de hipótesis con criterios escritos antes de ejecutar (P01–P07, N01) para corregir la receta y medir con rigor cuánta señal hay en la imagen.
 
 La conclusión principal es que la red **sí puede aprender** cuando se corrige la receta, pero lo que aprende de las imágenes **no supera de forma demostrable** a saber de qué cohorte procede la paciente. Todo está documentado, incluidos los resultados negativos.
 
@@ -205,7 +205,7 @@ Con el umbral 0,325:
 
 Sensibilidad 34,0 %, especificidad 74,8 % y precisión 36,7 %. El intervalo del AUC incluye 0,5.
 
-### Resumen de las cifras honestas
+### Resumen de las cifras
 
 | Evaluación | AUC por paciente |
 |---|---:|

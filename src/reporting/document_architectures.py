@@ -594,7 +594,7 @@ def main(only: str | None = None) -> None:
     registry_rows = json.loads((ROOT / 'experiments/notes/resultados_registrados.json').read_text())['runs']
     for (name, parent, _, hypothesis), title in zip(SPECS, titles):
         registered = next((row for row in registry_rows if row['experiment_id'] == name), None)
-        status_note = (f"Completo por el estudiante: ROC-AUC paciente{registered['roc_auc']:.6f}, "
+        status_note = (f"Completo: ROC-AUC paciente{registered['roc_auc']:.6f}, "
                        f"AP{registered['pr_auc']:.6f}, mejor época{registered['best_epoch']}/{registered['epochs_completed']}. "
                        "Ninguna prueba de esta tanda supera el pico observado E19; no mejora estable demostrada. "
                        if registered and registered['status'] == 'complete' else
@@ -799,7 +799,7 @@ def main(only: str | None = None) -> None:
         "CNN294129parámetros/8convs/8BN/ReLU/4MaxPool/GAP/dropout0,3, mismo inicializador/semilla desde cero. "
         "Datos878/219pacientes,8759/2186cortes,fold0seed42,batch16,AdamWLRWD0,001,BCE normal, "
         "Plateau,50/paciencia10,MPSfloat32; sin SiLU/GeM/EMA/SAM/Mixup/labelsmoothing/aumentos nuevos. "
-        "COMPLETO en MPS por el estudiante: AUC0,600907258/AP0,383448492/Brier0,206491021, "
+        "COMPLETO en MPS: AUC0,600907258/AP0,383448492/Brier0,206491021, "
         "mejor6/16,1075,90s; no supera E19. No adoptar ni relanzar. "
         "[Hipótesis y cierre](../HIPOTESIS_NORMALIZACION_CONJUNTA.md)."))
     specifications.append((
@@ -813,7 +813,7 @@ def main(only: str | None = None) -> None:
         "Datos878/219pacientes,8759/2186cortes,fold0seed42,batch16,AdamWLRWD0,001,BCE normal, "
         "Plateau,50/paciencia10,MPSfloat32; sin normalizaciónE53/SiLU/EMA/SAM/Mixup/labelsmoothing/aumentos nuevos. "
         "Solo fórmula matemática propia, no redes/pesos/código preentrenado del artículo de retrieval. "
-        "Completo MPS por el estudiante: AUC0,594657258/AP0,372722937/Brier0,212596906, "
+        "Completo MPS: AUC0,594657258/AP0,372722937/Brier0,212596906, "
         "mejor6/16,1084,61s; no supera E19. No adoptar ni relanzar. "
         "[Fórmula y controles](../HIPOTESIS_POOLING_GENERALIZADO.md)."))
     specifications.append((
@@ -827,7 +827,7 @@ def main(only: str | None = None) -> None:
         "scheduler puede cambiar trayectoria según validación. E11/E12 usaban otra base; "
         "E40 probó0,0003 sobre E19. Hipótesis actualizaciones más suaves, no elimina "
         "sobreajuste ni garantiza mejora; presupuesto idéntico puede detener un aprendizaje lento. "
-        "Pendiente científico por el estudiante. [Protocolo](../LR_E55.md)."))
+        "Pendiente científico. [Protocolo](../LR_E55.md)."))
     for folder, title, config, configs, explanation in specifications:
         loaded = load_experiment_config(ROOT / "configs/experiments" / config)
         catalog.append((folder, title, BreastPCRNet(loaded.model), configs, explanation))

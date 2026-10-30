@@ -22,7 +22,7 @@ BCE normal por corte. Evaluación principal media de probabilidades por paciente
 Umbral0,5 provisional para comparar; no umbral final ni optimizado en test.
 Preparado sin ningún entrenamiento. Comparar controles de imágenes y clínica,
 otras semillas y folds antes de atribuir mejora o adoptar modelo.
-El estudiante confirma permiso para estas variables; falta verificar su entrega
+El profesorado permite estas variables; falta verificar su entrega
 en la defensa y su registro basal. La web todavía no integra este checkpoint.
 
 ```sh

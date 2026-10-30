@@ -22,7 +22,7 @@ Análisis: `python -m src.analysis.analisis_p07`. Predicciones exteriores de las
 
 **Principal.** El ensemble mejora si el **IC95 pareado de AUC(ensemble 3 semillas) − AUC(P02 normal semilla 42) queda por encima de 0**.
 
-**Candidato a entrega** (reglas de entrega aplicadas al ensemble): principal + AUC exterior conjunta ≥ 0,55 + IC95 pareado frente a la línea base de cohorte por encima de 0. El entregable sería el promedio de los 15 modelos; el umbral, la mediana de los 5 umbrales del ensemble, cada uno elegido por F1 macro sobre la **validación interna** de su fold con la media de las 3 semillas. Nada se cambia ni se evalúa en test sin aprobación del estudiante.
+**Candidato a entrega** (reglas de entrega aplicadas al ensemble): principal + AUC exterior conjunta ≥ 0,55 + IC95 pareado frente a la línea base de cohorte por encima de 0. El entregable sería el promedio de los 15 modelos; el umbral, la mediana de los 5 umbrales del ensemble, cada uno elegido por F1 macro sobre la **validación interna** de su fold con la media de las 3 semillas. Nada se cambia ni se evalúa en test sin una decisión expresa.
 
 **Se reportan siempre:** AUC conjunta de cada semilla por separado (¿fue la 42 afortunada?) y su media; diferencia ensemble − media de las semillas individuales (secundario); AUC por corte; AUC dentro de cada cohorte; matriz de confusión conjunta con los umbrales internos.
 
@@ -30,7 +30,7 @@ Análisis: `python -m src.analysis.analisis_p07`. Predicciones exteriores de las
 
 ## Ejecución
 
-Lo lanza el estudiante. 2 smokes + 10 entrenamientos. P02 normal tardó ≈ 100 min los 5 folds en la GPU: ≈ 3,5 h.
+Se lanza a mano. 2 smokes + 10 entrenamientos. P02 normal tardó ≈ 100 min los 5 folds en la GPU: ≈ 3,5 h.
 
 ```bash
 python -m src.campaigns.run_p07_noche --check

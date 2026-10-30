@@ -1,6 +1,6 @@
 # P02 · P01 + aumento geométrico sincronizado
 
-Preparado el 20 de octubre de 2026. Ejecución manual por el estudiante. [Inicio](README.md) · [P01](P01_LOTES.md) · [Plan](PLAN.md).
+Preparado el 20 de octubre de 2026. Ejecución manual. [Inicio](README.md) · [P01](P01_LOTES.md).
 
 ## Por qué
 
@@ -8,7 +8,7 @@ P01 resolvió el colapso: con 10 pacientes por lote la red aprende (FIT-eval 0,4
 
 **Hipótesis.** Si cada época presenta los cortes volteados, girados y desplazados de otra manera, memorizar cada paciente cuesta más. La red tendría que apoyarse en el patrón de realce y la textura, que no cambian con esas transformaciones. Se espera que FIT-eval suba más despacio y que la interna lo acompañe durante más épocas.
 
-Edad y menopausia se descartaron: AUC 0,532 con validación cruzada en train, parte de esa señal es la cohorte, y complicarían la demo ([razonamiento](PLAN.md)).
+Edad y menopausia se descartaron: AUC 0,532 con validación cruzada en train, parte de esa señal es la cohorte, y complicarían la demo.
 
 ## Qué cambia (y qué no)
 
@@ -52,7 +52,7 @@ Referencias en el mismo fold 0: P01 (exterior 0,570; brecha FIT–interna en la 
 
 Con un solo fold (error típico ≈ 0,043) no se declara ganador en ningún caso.
 
-## Resultado (ejecutado por el estudiante, 20 de octubre, 24 épocas, 37 min)
+## Resultado (ejecutado, 20 de octubre, 24 épocas, 37 min)
 
 | Época | Pérdida online | AUC FIT-eval | AUC interna | BCE interna |
 |---:|---:|---:|---:|---:|

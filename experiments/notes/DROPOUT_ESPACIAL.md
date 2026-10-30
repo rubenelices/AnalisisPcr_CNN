@@ -7,7 +7,7 @@ al evaluar ambos sin aumentos y con `eval()`. Recalibrar BatchNorm no ayudó.
 Esto sugiere un problema de generalización; no demuestra qué patrón concreto
 está aprendiendo la CNN. Añadir capas no resolvió el problema en E06.
 
-La referencia nueva es **E13_50epochs**, que el estudiante ha dejado corriendo
+La referencia nueva es **E13_50epochs**, que ha quedado corriendo
 en la GPU universitaria. E14/E15 conservan su presupuesto y cambian únicamente
 `model.spatial_dropout`. No comparamos 50 épocas contra 10 como si fuera una
 ablación de regularización pura. No hay resultados de estas variantes todavía.

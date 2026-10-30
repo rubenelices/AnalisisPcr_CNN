@@ -28,7 +28,7 @@ Plateau paciencia 3/factor 0,5 y early stopping paciencia 10.
 Métrica principal: ROC-AUC **por paciente**, media de probabilidades de cortes.
 No aumenta pacientes ni aplica rotaciones; cambia únicamente la modalidad clínica
 respecto a la referencia, con nueva cabeza y trayectoria aleatoria propia.
-E58 completado por el estudiante: AUC0,747076613/AP0,544753123, best2 de12.
+E58 completado: AUC0,747076613/AP0,544753123, best2 de12.
 A0,5 sensibilidad0,15625 y F10,23529: AUC alto no garantiza decisiones satisfactorias.
 [Nueva etapa clínica y figuras](../README.md).
 Smoke técnico no demuestra calidad; no reentrenar E58 para organizar archivos.

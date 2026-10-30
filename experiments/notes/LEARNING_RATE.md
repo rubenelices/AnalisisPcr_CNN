@@ -2,7 +2,7 @@
 
 Referencia: E05 Mac, AUC paciente 0,586895, AP 0,374219, mejor época 1.
 El learning rate inicial 0,001 del profesor es una recomendación, no un requisito
-fijo, según aclaración del estudiante. Probamos valores menores sin cambiar capas.
+fijo. Probamos valores menores sin cambiar capas.
 
 | Ejecución | LR inicial | Épocas | Arquitectura |
 |---|---:|---:|---|
@@ -80,7 +80,7 @@ Las entradas E11/E12 del notebook ya incorporan los resultados locales completos
 
 Las tres ejecuciones usan diez épocas, fold 0, seed 42 y 219 pacientes de
 validación. E11/E12: MPS, Python 3.13.5, PyTorch 2.11.0. Fuente: summary.json
-e history.csv locales contrastados con las salidas del estudiante. Test no evaluado.
+e history.csv locales contrastados con las salidas de terminal. Test no evaluado.
 
 A umbral 0,5, E11 detecta 1 de las 64 positivas (2 falsos positivos), y E12
 8 de 64 (7 falsos positivos). No ajustar el umbral para fingir una mejora del

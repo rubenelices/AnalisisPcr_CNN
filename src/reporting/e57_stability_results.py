@@ -171,8 +171,8 @@ def decision_audit_cells(items):
               'limitada puede ocurrir incluso con probabilidades razonables.\n\n'
               'Las matrices siguientes usan 0,5 y dos umbrales fijos que ya figuraban en el '
               'diagnóstico previo. Son ilustrativas sobre validación usada para seleccionar época. '
-              '**No son una mejora validada de forma independiente.** La versión 0,325 solicitada '
-              'por el estudiante se identifica aparte como exploratoria. Bajar el umbral '
+              '**No son una mejora validada de forma independiente.** La versión 0,325 '
+              'se identifica aparte como exploratoria. Bajar el umbral '
               'permite detectar positivas, pero también genera falsos positivos y no aumenta el AUC. '
               'La escala cambia entre folds, por lo que un único 0,325 no arregla todas las matrices.\n\n'
               '**Solución que debe evaluarse:** mantener E57, reservar validación interna por paciente '
@@ -196,7 +196,7 @@ def decision_audit_cells(items):
 
 
 def requested_threshold_cells(items):
-    """Vista explícita solicitada por el estudiante; conserva los runs de 0,5."""
+    """Vista explícita; conserva los runs de 0,5."""
     from src.evaluation.metrics import binary_metrics
     config_path = BASE / 'decision_0325.json'
     if not config_path.exists() or not items:
@@ -255,14 +255,14 @@ def requested_threshold_cells(items):
         aggregate.pop(key, None)
     (target / 'conteos_y_decisiones_agregadas.json').write_text(json.dumps(aggregate, indent=2))
     c = aggregate['confusion_matrix']
-    message = ('## E57 · versión con umbral 0,325 solicitada por el estudiante\n\n'
+    message = ('## E57 · versión con umbral 0,325\n\n'
         + table.round(4).to_markdown(index=False)
         + f'\n\nConteos de los cinco folds: **TN {c["tn"]}, FP {c["fp"]}, FN {c["fn"]}, TP {c["tp"]}**. '
         + f'Sensibilidad {aggregate["sensitivity"]:.1%}; especificidad {aggregate["specificity"]:.1%}; '
         + f'precisión pCR {aggregate["precision"]:.1%}; balanced accuracy {aggregate["balanced_accuracy"]:.4f}.\n\n'
         + '**Cambiar el umbral es válido y no requiere reentrenar.** Aquí 0,325 se ha elegido después '
           'de ver estos resultados: esta tabla es exploratoria y no una estimación independiente '
-          'del rendimiento futuro. La comparación honesta conserva la matriz original a 0,5 '
+          'del rendimiento futuro. La comparación conserva la matriz original a 0,5 '
           'y declara cómo se eligió la nueva. Para estimar generalización, fijar el procedimiento '
           'de selección usando solo train/validación interna y evaluar en pacientes distintas. '
           'El AUC, AP, probabilidades, pesos y curvas por época son los mismos.\n\n'

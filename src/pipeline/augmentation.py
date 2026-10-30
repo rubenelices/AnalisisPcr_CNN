@@ -138,7 +138,7 @@ class SharedTrainAugmentations:
     """Composición serializable: geometría primero, ganancia después.
 
     E25 solo usa ganancia. Se conserva esta composición para evitar dos pipelines
-    distintos si un experimento futuro autoriza combinar ambos aumentos.
+    distintos si un experimento futuro combina ambos aumentos.
     """
 
     def __init__(self, affine: SharedRandomAffine, gain: SharedRandomGain) -> None:

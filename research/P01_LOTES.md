@@ -45,7 +45,7 @@ La figura queda en `reports/new_approach/P01_lotes_pacientes/overfit/comparacion
 - **Ambas memorizan:** la receta no explica el colapso con 702 pacientes; la causa es otra (señal débil frente a regularización). → No lanzar el paso 2; revisarlo antes.
 - **Ninguna memoriza:** el problema está en otro sitio (LR, cabeza, entrada). → Parar y diagnosticar.
 
-### Resultado del paso 1 (ejecutado por el estudiante, 20 de octubre, ~2 min cada receta)
+### Resultado del paso 1 (ejecutado, 20 de octubre, ~2 min cada receta)
 
 ![Comparación de memorización](../reports/new_approach/P01_lotes_pacientes/overfit/comparacion_overfit.png)
 
@@ -87,7 +87,7 @@ python -m src.training.train_p01 report
 3. **Merece los folds 1–4:** AUC exterior ≥ 0,62 por paciente, con brecha FIT−interna < 0,15. Un solo fold tiene error típico ≈ 0,043: no se declara ganador con él.
 4. **Demo:** se registra el AUC exterior **por corte**, porque la evaluación en directo usa un corte por paciente.
 
-### Resultado del paso 2 (ejecutado por el estudiante, 20 de octubre, 16 épocas, 23 min)
+### Resultado del paso 2 (ejecutado, 20 de octubre, 16 épocas, 23 min)
 
 | Época | Pérdida online | AUC FIT-eval | AUC interna | BCE interna |
 |---:|---:|---:|---:|---:|

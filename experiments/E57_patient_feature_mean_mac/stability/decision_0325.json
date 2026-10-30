@@ -5,5 +5,5 @@
   "requested_on": "2026-10-19",
   "independent_evaluation": false,
   "test_evaluated": false,
-  "note": "Vista solicitada por el estudiante después de revisar los folds; no reemplaza las métricas históricas a 0,5 ni modifica pesos o probabilidades."
+  "note": "Vista añadida después de revisar los folds; no reemplaza las métricas históricas a 0,5 ni modifica pesos o probabilidades."
 }

@@ -207,7 +207,7 @@ const LECTURAS = {
   C23_un_corte_paciente_normal_fold2: (e) => `Pico ${fmt(e.pico, 3)} en la época ${e.mejor_epoca}, pero termina en ${fmt(e.final, 3)}.`,
   E57_patient_feature_mean_mac: (e, t) => `El pico más alto con solo imagen, elegido mirando esas mismas pacientes: prometía más de lo que dio el test (${fmt(t, 3)}).`,
   N01_e57_bce_weighted_fold_0_seed_42: (e) => `La mayor caída de todas: de ${fmt(e.pico, 3)} a ${fmt(e.final, 3)}, por debajo del azar.`,
-  bag_fixed_fold1: () => 'Al no elegir el pico, el resultado es honesto: pico y final coinciden.',
+  bag_fixed_fold1: () => 'Al no elegir el pico, pico y final coinciden.',
   B08_solo_edad_menopausia: (e) => `Dos datos clínicos solos dan ${fmt(e.pico, 3)}: azar.`,
   D08_clinica_sola: (e) => `Sin imágenes, la clínica llega a ${fmt(e.pico, 3)}, por encima de cualquier CNN de solo imagen.`,
   D17_ganancia_compartida: (e) => `El pico más alto del historial (${fmt(e.pico, 3)}), pero termina en ${fmt(e.final, 3)}.`,
@@ -495,7 +495,7 @@ export function Portada({ ir }) {
         <div className="intro-columnas">
           <Revelar orden={0}><h2 className="subtitulo">El problema</h2><p>Clasificar cada paciente en pCR o no pCR con solo imágenes: tres fases de resonancia con contraste por corte. Sin datos clínicos como entrada.</p></Revelar>
           <Revelar orden={1}><h2 className="subtitulo">Las reglas</h2><p>CNN 2D propia, sin transfer learning. Particiones por paciente. El test no se usa para elegir nada y se evalúa una vez.</p></Revelar>
-          <Revelar orden={2}><h2 className="subtitulo">El resultado</h2><p>AUC 0,573 en test. Lo importante es cómo se ha llegado: un diagnóstico de por qué no aprendía, una receta corregida y una medida honesta.</p></Revelar>
+          <Revelar orden={2}><h2 className="subtitulo">El resultado</h2><p>AUC 0,573 en test. Lo importante es cómo se ha llegado: un diagnóstico de por qué no aprendía, una receta corregida y una medida rigurosa.</p></Revelar>
         </div>
         <dl className="cifras-clave">
           {cifras.map((c, i) => <Revelar key={c.t} orden={i}><dd><Contador valor={c.v} /></dd><dt>{c.t}</dt></Revelar>)}

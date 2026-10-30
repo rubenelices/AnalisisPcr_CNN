@@ -1,4 +1,4 @@
-"""C17: receta publicada de la CNN97.809, preparada para ejecución del estudiante.
+"""C17: receta publicada de la CNN97.809, preparada para ejecutar a mano.
 
 Implementación propia con componentes existentes. Solo train público, fold0,
 BCE normal/ponderada por corte; selección en el mismo fold de validación.
@@ -288,7 +288,7 @@ def run_config(path,device_name='mps',live=False):
     with os.fdopen(fd,'w') as file:json.dump(dict(pid=os.getpid(),started_utc=datetime.now(timezone.utc).isoformat()),file)
     try:
         if not spec['debug']:
-            # Preflight obligatorio al ejecutar el estudiante: reutiliza una prueba
+            # Preflight obligatorio al ejecutar: reutiliza una prueba
             # técnica idéntica ya completa, o la ejecuta antes de los científicos.
             technical=json.loads(json.dumps(recipe(True)))
             for loss in technical['losses']:run_one(technical,loss,device,live)

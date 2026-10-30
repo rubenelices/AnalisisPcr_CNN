@@ -26,14 +26,14 @@ def test_partial_report_keeps_reference_and_notes_without_external_metrics(tmp_p
                        fit_auc=.7, inner_auc=.6, inner_ap=.4, learning_rate=.001, seconds=1)]).to_csv(run/'history.csv', index=False)
     path = build(tmp_path)
     nb = nbformat.read(path, 4)
-    note = nbformat.v4.new_markdown_cell('Nota manual del estudiante')
+    note = nbformat.v4.new_markdown_cell('Nota manual')
     nb.cells.insert(3, note)
     nbformat.write(nb, path)
     build(tmp_path)
     result = nbformat.read(path, 4)
     text = '\n'.join(c.source for c in result.cells if c.cell_type == 'markdown')
     assert 'Interrumpido' in text and 'Todas las épocas' in text
-    assert 'Nota manual del estudiante' in text and old.source in text
+    assert 'Nota manual' in text and old.source in text
     assert 'Exterior del checkpoint' not in text
     assert sum(c.source.startswith('### N01 · normal') for c in result.cells) == 1
     assert not (run/'exterior_05.png').exists()

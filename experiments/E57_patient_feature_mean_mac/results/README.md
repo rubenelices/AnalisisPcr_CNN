@@ -1,7 +1,5 @@
 # E57 · carpeta de presentación
 
-[Plan de la semana y arranque de la demo E57](PLAN_SEMANA.md).
-
 Empieza por [RESULTADOS.ipynb](RESULTADOS.ipynb): todo está mostrado sin ejecutar celdas.
 
 [Protocolo de cierre](CIERRE.md).

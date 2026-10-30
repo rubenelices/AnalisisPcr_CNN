@@ -1,6 +1,6 @@
 # Web de la entrega
 
-[Inicio](README.md) · [Plan](PLAN.md).
+[Inicio](README.md).
 
 La web tiene dos partes:
 

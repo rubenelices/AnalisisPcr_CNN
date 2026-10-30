@@ -2,7 +2,7 @@
 
 ## Evidencia que motiva la prueba
 
-Diagnóstico de E05 compartido por el estudiante desde la universidad:
+Diagnóstico de E05 obtenido en la universidad:
 
 | Checkpoint | AUC train | AUC validación | AUC validación con copia BN recalculada |
 |---|---:|---:|---:|
@@ -91,7 +91,7 @@ El smoke usó ocho pacientes de train y cuatro de validación en CPU y completó
 el entrenamiento en 2,54 segundos; ese tiempo y sus métricas no representan
 un entrenamiento completo ni prueban una mejora científica. El dibujo PNG/SVG
 se ha revisado visualmente. MPS no está disponible en este entorno de ejecución;
-conviene comprobarlo desde el entorno de terminal del estudiante.
+conviene comprobarlo desde la terminal local.
 
 Benchmark CPU local con batch 16, cero workers, tres pasos de calentamiento,
 diez medidos y OMP/MKL limitados a dos hilos: 67,27 cortes/s, aproximadamente
@@ -102,7 +102,7 @@ entorno, no una promesa para cualquier Mac. Informe regenerable e ignorado en
 
 ## Qué vamos a comparar
 
-Estado actualizado: el estudiante ya completó E10 en Mac MPS (198,61 s), mejor
+Estado actualizado: E10 completado en Mac MPS (198,61 s), mejor
 época 6, ROC-AUC paciente 0,590625 y AP 0,379061. E05 Mac completo obtuvo
 0,586895 y 0,374219. Delta AUC +0,003730, IC pareado exploratorio
 [−0,076872; 0,077167]: no hay ventaja global clara. La reducción de anchura

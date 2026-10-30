@@ -26,7 +26,7 @@ no por la métrica que resulte más favorable al terminar.
 
 ## Referencia observada, no objetivo garantizado
 
-Salida de E05 facilitada por el estudiante: 878 pacientes de train, 219 de
+Salida de E05: 878 pacientes de train, 219 de
 validación, 10 épocas, mejor checkpoint en época 1, ROC-AUC 0,614012,
 PR-AUC 0,390992, sensibilidad 0 y especificidad 1 a umbral 0,5. Tiempo total
 205,27 s en la RX 6700 XT. Train loss pasó de 0,6148 a 0,4727 sin mejora

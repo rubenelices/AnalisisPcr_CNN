@@ -2,15 +2,15 @@
 
 [Inicio](README.md) · [Estado](ESTADO.md) · [Reglas de entrega](REGLAS_ENTREGA.md).
 
-**Escrito el 27 de octubre de 2026, antes de entrenar los folds 1–4.** Revoca la decisión anterior del estudiante de no ejecutar los fits pendientes de N01, solo para la BCE normal.
+**Escrito el 27 de octubre de 2026, antes de entrenar los folds 1–4.** Revoca la decisión anterior de no ejecutar los fits pendientes de N01, solo para la BCE normal.
 
 ## Para qué
 
-N01 es la receta de E57 (2 pacientes × 10 cortes por lote, sin aumento) con el protocolo limpio: FIT / validación interna / fold exterior. Solo existe el fold 0, con AUC exterior **0,6165**, la más alta medida en el proyecto. E57, el modelo entregado, no tiene una validación cruzada limpia propia: su cifra honesta es el test (0,573). Completar los folds 1–4 da la **validación cruzada de la receta del modelo entregado** sobre las 1.097 pacientes.
+N01 es la receta de E57 (2 pacientes × 10 cortes por lote, sin aumento) con el protocolo limpio: FIT / validación interna / fold exterior. Solo existe el fold 0, con AUC exterior **0,6165**, la más alta medida en el proyecto. E57, el modelo entregado, no tiene una validación cruzada limpia propia: su cifra de referencia es el test (0,573). Completar los folds 1–4 da la **validación cruzada de la receta del modelo entregado** sobre las 1.097 pacientes.
 
 ## Qué se espera
 
-En el fold 0, la AUC de FIT en la época elegida (2) fue 0,505 y la BCE se quedó en la del predictor constante (≈ 0,605): la red apenas aprendió. Un 0,6165 exterior con 0,505 en FIT es compatible con el azar de 219 pacientes (error típico ≈ 0,043). **Predicción escrita antes:** la AUC exterior conjunta quedará entre 0,50 y 0,56, sin superar a la cohorte de forma demostrable. La hipótesis del estudiante es la contraria: que el fold 0 no fue suerte.
+En el fold 0, la AUC de FIT en la época elegida (2) fue 0,505 y la BCE se quedó en la del predictor constante (≈ 0,605): la red apenas aprendió. Un 0,6165 exterior con 0,505 en FIT es compatible con el azar de 219 pacientes (error típico ≈ 0,043). **Predicción escrita antes:** la AUC exterior conjunta quedará entre 0,50 y 0,56, sin superar a la cohorte de forma demostrable. La hipótesis alternativa es la contraria: que el fold 0 no fue suerte.
 
 ## Qué se ejecuta
 
@@ -22,7 +22,7 @@ Análisis: `python -m src.analysis.analisis_n01_cv`. Mismo método que P05 y P07
 
 - **Se reporta:** AUC exterior conjunta con su IC95, por corte, por cohorte y por fold; diferencias pareadas frente a la línea base de cohorte y frente a P02 normal.
 - **"La receta de E57 aprende señal más allá de la cohorte"** solo si el IC95 pareado N01 − cohorte queda por encima de 0.
-- **No es un candidato a entrega.** E57 sigue siendo el entregable pase lo que pase. Si el resultado fuera muy bueno (conjunta ≥ 0,55 e IC95 frente a la cohorte por encima de 0), cambiar el entregable al promedio de los 5 modelos de N01 necesitaría reglas nuevas escritas antes y la aprobación del estudiante, con una única evaluación en test.
+- **No es un candidato a entrega.** E57 sigue siendo el entregable pase lo que pase. Si el resultado fuera muy bueno (conjunta ≥ 0,55 e IC95 frente a la cohorte por encima de 0), cambiar el entregable al promedio de los 5 modelos de N01 necesitaría reglas nuevas escritas antes y una decisión expresa, con una única evaluación en test.
 - El fold 0 entra en la conjunta igual que los demás: no se descarta ni se pondera.
 
 Uso educativo, sin validez clínica.
@@ -54,7 +54,7 @@ AUC por corte: 0,508 (P02: 0,529). Dentro de cada cohorte: Duke 0,46, I-SPY1 0,5
 
 ## Decisión tomada
 
-**No se cumple el criterio:** el IC95 frente a la cohorte incluye 0 (y la diferencia es negativa). La receta de E57 no demuestra aprender señal de imagen más allá de la cohorte. Se cumple la predicción escrita antes (conjunta 0,50–0,56); la hipótesis del estudiante (el fold 0 no fue suerte) no se sostiene: los otros cuatro folds dan entre 0,445 y 0,542.
+**No se cumple el criterio:** el IC95 frente a la cohorte incluye 0 (y la diferencia es negativa). La receta de E57 no demuestra aprender señal de imagen más allá de la cohorte. Se cumple la predicción escrita antes (conjunta 0,50–0,56); la hipótesis alternativa (el fold 0 no fue suerte) no se sostiene: los otros cuatro folds dan entre 0,445 y 0,542.
 
 Lo que enseña, sin valor de decisión:
 

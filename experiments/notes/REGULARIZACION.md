@@ -31,7 +31,7 @@ entrenamiento menor: interesa la generalización por paciente.
 | E07 | 0,595565 | 0,368886 | 1 | Ejecutado, fold 0 / seed 42; no mejoró E05 en esta ejecución |
 | E08 | — | — | — | Configurado; pendiente de entrenamiento completo |
 
-Los resultados E05/E06 proceden de las salidas compartidas por el estudiante.
+Los resultados E05/E06 proceden de las salidas de terminal.
 E07 también completó diez épocas: su mejor checkpoint predijo todas las
 pacientes como negativas a umbral 0,5. El dropout mayor no mejoró ROC-AUC ni
 PR-AUC en esta ejecución; no se extrapola a otras semillas o folds.

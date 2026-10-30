@@ -79,7 +79,7 @@ Agregación principal: media de probabilidades de todos los cortes. Top5 por rea
 
 Entrenamiento manual: [Ejecutar y ver curvas](../K01_knet_se_dualpool/EJECUTAR.ipynb). BCE normal/ponderada N0/N1 de cortes FIT; AdamW LR0,001/WD0,001, Plateau AUCpaciente3/factor0,5, máximo60épocas, **paciencia15** sin mejora mayor1e-6. Sin geometría por defecto para no añadir un cambio de receta; nunca intensidad/ImageNet. Paciencia15 de earlystop distinta de paciencia3 del scheduler. Cada pérdida reinicia pesos/seed42. Mejor época por val; media de épocas descriptiva, no media5folds ni test independiente.
 
-Estado: **preparado, no entrenado**. Solo formas/parametría con tensores sintéticos en eval. Smokes y científicos los ejecuta el estudiante. Uso educativo, sin validez clínica.
+Estado: **preparado, no entrenado**. Solo formas/parametría con tensores sintéticos en eval. Smokes y científicos se ejecutan a mano. Uso educativo, sin validez clínica.
 '''
     (root/'README.md').write_text(text)
     print('Documentado K01',count)

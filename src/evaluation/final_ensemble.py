@@ -176,7 +176,7 @@ def evaluate_test(device_name='cpu', root=ROOT):
         return result
     except BaseException as error:
         (out/'interrupcion.json').write_text(json.dumps(dict(error=repr(error),
-            nota='No repetir automáticamente: revisar con el estudiante'), indent=2))
+            nota='No repetir automáticamente: revisar antes'), indent=2))
         raise
 
 

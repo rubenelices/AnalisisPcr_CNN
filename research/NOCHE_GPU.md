@@ -50,7 +50,7 @@ Con los 10 fits completos, se aplican las [reglas fijadas antes de ver los resul
 python -m src.evaluation.final_ensemble freeze --variant p02 --gpu
 ```
 
-Escribe `reports/new_approach/ENTREGA/decision.json`: qué receta se entrega, por qué, los SHA de los 5 pesos y el umbral (la mediana de los internos). Solo cuando el estudiante lo decida, la **única** evaluación en test:
+Escribe `reports/new_approach/ENTREGA/decision.json`: qué receta se entrega, por qué, los SHA de los 5 pesos y el umbral (la mediana de los internos). Solo al cerrar la decisión, la **única** evaluación en test:
 
 ```bash
 python -m src.evaluation.final_ensemble test --device cpu

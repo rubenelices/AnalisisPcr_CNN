@@ -1,6 +1,6 @@
 # E57 · estabilidad en los cinco folds · 19 octubre 2026
 
-El estudiante completó el smoke y los cuatro científicos locales preparados; el fold 0 procede del experimento E57 anterior. La CNN y la receta normal son las mismas; en los folds 1–4 se añadió evaluación de train en el mismo modo de validación para observar las curvas. No se evaluó test.
+Se completaron el smoke y los cuatro científicos locales preparados; el fold 0 procede del experimento E57 anterior. La CNN y la receta normal son las mismas; en los folds 1–4 se añadió evaluación de train en el mismo modo de validación para observar las curvas. No se evaluó test.
 
 | Fold | Mejor época / épocas | AUC paciente en mejor época | AUC al final | AUC train en mejor checkpoint | Matriz a 0,5 |
 |---|---:|---:|---:|---:|---|
